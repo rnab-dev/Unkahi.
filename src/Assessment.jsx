@@ -206,9 +206,9 @@ export default function Assessment({ onComplete }) {
   const phase = STORY_PHASES[currentStep];
 
   return (
-    <div className={`bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-indigo-500/10 rounded-[2.5rem] p-6 md:p-10 max-w-4xl w-full mx-auto transition-all duration-300 ease-in-out transform ${isFading ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'}`}>
+    <div className={`bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-indigo-500/10 rounded-[2.5rem] p-6 md:p-10 max-w-4xl w-full mx-auto transition-all duration-300 ease-in-out transform box-border ${isFading ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'}`}>
       <div className="w-full flex-col flex h-full"> 
-        <div className="mb-4 text-xs font-bold tracking-widest text-[#B48EAD] uppercase text-center bg-white/70 py-2 px-4 rounded-full inline-block mx-auto border border-white shadow-sm w-max">
+        <div className="mb-4 text-[10px] sm:text-xs font-bold tracking-widest text-[#B48EAD] uppercase text-center bg-white/70 py-2 px-4 rounded-full inline-block mx-auto border border-white shadow-sm max-w-[80%] whitespace-normal leading-snug">
           {phase.phase} | {phase.title}
         </div>
         <p className="text-xl md:text-2xl text-slate-700 mb-8 leading-relaxed text-center font-extrabold px-2 md:px-6">
@@ -221,9 +221,9 @@ export default function Assessment({ onComplete }) {
             <button
               key={idx}
               onClick={() => handleOptionSelect(opt.weights)}
-              className="bg-white/80 hover:bg-white rounded-[1.5rem] w-full text-left p-5 text-base font-bold text-slate-600 hover:text-teal-700 flex items-center justify-between group shadow-sm border border-white transition-all hover:-translate-y-1 hover:shadow-md"
+              className="bg-white/80 hover:bg-white rounded-[1.5rem] w-full h-auto min-h-[4rem] text-left p-4 sm:p-5 text-sm sm:text-base font-bold text-slate-600 hover:text-teal-700 flex items-center justify-between group shadow-sm border border-white transition-all hover:-translate-y-1 hover:shadow-md"
             >
-              <span className="pr-4">{opt.text}</span>
+              <span className="pr-4 leading-snug">{opt.text}</span>
               <span className="opacity-0 group-hover:opacity-100 text-teal-600 transition-opacity font-black text-xl">→</span>
             </button>
           ))}
