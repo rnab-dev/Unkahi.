@@ -27,59 +27,103 @@ export function BreathingRoom({ onBack }) {
   }, []);
 
   return (
-    <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-pink-500/10 rounded-[3rem] p-6 sm:p-12 mt-6 sm:mt-10 text-center relative max-w-2xl mx-auto flex flex-col items-center w-full">
-      <button onClick={onBack} className="absolute top-6 left-6 sm:top-8 sm:left-8 text-slate-400 hover:text-pink-400 font-bold uppercase tracking-widest text-xs transition-colors">
+    <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-pink-500/10 rounded-[3rem] p-6 sm:p-12 mt-6 sm:mt-10 text-center relative max-w-2xl mx-auto flex flex-col items-center w-full overflow-hidden">
+      <button onClick={onBack} className="absolute top-6 left-6 sm:top-8 sm:left-8 z-20 text-slate-400 hover:text-pink-400 font-bold uppercase tracking-widest text-xs transition-colors">
         ← Return
       </button>
       <h2 className="text-3xl font-extrabold mb-4 text-pink-600 tracking-tight">The Blooming Lotus</h2>
-      <p className="text-slate-500 mb-20 font-medium">Follow the soft expansion of the petals to reset your vagus nerve.</p>
+      <p className="text-slate-500 mb-10 sm:mb-14 font-medium max-w-md">Follow the soft expansion of the petals to reset your vagus nerve.</p>
 
-      <div className="relative h-64 w-64 flex items-center justify-center mb-10">
-        
-        {/* The Petals */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute bg-gradient-to-t from-pink-300 to-white/40 border border-white/60 shadow-lg shadow-pink-300/20 backdrop-blur-sm transition-all duration-[4000ms] ease-in-out"
-              style={{
-                width: '60px',
-                height: '140px',
-                borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
-                transformOrigin: 'bottom center',
-                transform: `rotate(${i * 45}deg) translateY(-50%) scaleY(${scale}) scaleX(${scale * 0.8}) rotateX(${scale > 1 ? 40 : 0}deg)`,
-                opacity: scale > 1 ? 0.9 : 0.4,
-                zIndex: 5
-              }}
-            />
-          ))}
-          {/* Inner Petals */}
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={i + 8}
-              className="absolute bg-gradient-to-t from-purple-300 to-pink-100/60 border border-white/40 shadow-md backdrop-blur-md transition-all duration-[4000ms] ease-in-out"
-              style={{
-                width: '45px',
-                height: '110px',
-                borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
-                transformOrigin: 'bottom center',
-                transform: `rotate(${i * 45 + 22.5}deg) translateY(-40%) scaleY(${scale * 0.9}) scaleX(${scale * 0.7}) rotateX(${scale > 1 ? 20 : 0}deg)`,
-                opacity: scale > 1 ? 1 : 0.5,
-                zIndex: 6
-              }}
-            />
-          ))}
-        </div>
+      <div className="relative w-[min(78vw,18rem)] sm:w-[18rem] aspect-square flex items-center justify-center mb-8 sm:mb-10">
+        <div className="absolute inset-0 rounded-full bg-pink-200/30 blur-3xl" style={{ opacity: scale > 1 ? 0.7 : 0.35 }} />
 
-        {/* Lotus Core / Center Glow */}
-        <div 
-          className="absolute w-28 h-28 rounded-full transition-all duration-[4000ms] ease-in-out flex items-center justify-center z-10 bg-white/80 backdrop-blur-xl border-4 border-white shadow-[0_0_40px_rgba(244,114,182,0.8)]"
-          style={{ transform: `scale(${scale * 0.8})` }}
+        <svg
+          viewBox="0 0 400 400"
+          className="relative w-full h-full drop-shadow-[0_16px_35px_rgba(236,72,153,0.16)]"
+          aria-hidden="true"
         >
-          <div className="absolute inset-0 rounded-full animate-pulse opacity-50" style={{ backgroundColor: color, filter: 'blur(10px)' }}></div>
-          <div className="text-xl font-black text-pink-700 tracking-wide z-20 drop-shadow-sm">{phase}</div>
+          <defs>
+            <radialGradient id="lotusCore" cx="50%" cy="45%" r="60%">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.98)" />
+              <stop offset="55%" stopColor="rgba(253,242,248,0.95)" />
+              <stop offset="100%" stopColor="rgba(244,114,182,0.25)" />
+            </radialGradient>
+            <linearGradient id="petalFront" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="rgba(253,242,248,0.98)" />
+              <stop offset="55%" stopColor="rgba(244,114,182,0.8)" />
+              <stop offset="100%" stopColor="rgba(168,85,247,0.34)" />
+            </linearGradient>
+            <linearGradient id="petalBack" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.9)" />
+              <stop offset="55%" stopColor="rgba(251,207,232,0.72)" />
+              <stop offset="100%" stopColor="rgba(196,181,253,0.28)" />
+            </linearGradient>
+          </defs>
+
+          <g
+            transform={`translate(200 200) scale(${scale > 1 ? 1.04 : 0.98})`}
+            style={{ transition: 'transform 4000ms ease-in-out' }}
+          >
+            {[...Array(8)].map((_, i) => (
+              <g key={`outer-${i}`} transform={`rotate(${i * 45})`}>
+                <path
+                  d="M0,-146 C34,-126 44,-68 0,-16 C-44,-68 -34,-126 0,-146 Z"
+                  fill="url(#petalBack)"
+                  stroke="rgba(255,255,255,0.85)"
+                  strokeWidth="2"
+                  style={{
+                    transformOrigin: 'center',
+                    transformBox: 'fill-box',
+                    transform: `translateY(${scale > 1 ? -2 : 10}px) scale(${scale > 1 ? 1 : 0.92})`,
+                    opacity: scale > 1 ? 0.96 : 0.72,
+                    transition: 'transform 4000ms ease-in-out, opacity 4000ms ease-in-out'
+                  }}
+                />
+              </g>
+            ))}
+
+            {[...Array(8)].map((_, i) => (
+              <g key={`inner-${i}`} transform={`rotate(${i * 45 + 22.5})`}>
+                <path
+                  d="M0,-112 C26,-98 34,-52 0,-10 C-34,-52 -26,-98 0,-112 Z"
+                  fill="url(#petalFront)"
+                  stroke="rgba(255,255,255,0.92)"
+                  strokeWidth="1.5"
+                  style={{
+                    transformOrigin: 'center',
+                    transformBox: 'fill-box',
+                    transform: `translateY(${scale > 1 ? -2 : 14}px) scale(${scale > 1 ? 1.02 : 0.9})`,
+                    opacity: scale > 1 ? 1 : 0.78,
+                    transition: 'transform 4000ms ease-in-out, opacity 4000ms ease-in-out'
+                  }}
+                />
+              </g>
+            ))}
+
+            <circle
+              r="58"
+              fill="url(#lotusCore)"
+              stroke="rgba(255,255,255,0.95)"
+              strokeWidth="4"
+              style={{
+                transform: `scale(${scale > 1 ? 1.08 : 0.96})`,
+                transformOrigin: 'center',
+                transition: 'transform 4000ms ease-in-out'
+              }}
+            />
+            <circle
+              r="30"
+              fill={color}
+              style={{ filter: 'blur(6px)', opacity: 0.72 }}
+            />
+          </g>
+        </svg>
+
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="bg-white/80 backdrop-blur-xl border border-white/70 shadow-[0_0_34px_rgba(236,72,153,0.2)] rounded-full px-5 py-3 sm:px-6 sm:py-4">
+            <div className="text-sm sm:text-xl font-black text-pink-700 tracking-wide">{phase}</div>
+          </div>
         </div>
-        
       </div>
     </div>
   );
