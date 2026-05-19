@@ -98,6 +98,10 @@ function App() {
       <div className="w-full max-w-6xl relative z-10 flex flex-col items-center justify-center flex-grow mx-auto">
         {viewMap[currentView]()}
       </div>
+
+      <footer className="mt-auto py-6 text-center text-slate-500/80 font-medium text-xs tracking-widest z-10 relative uppercase">
+        An Arnab Initiative
+      </footer>
     </div>
   );
 }
