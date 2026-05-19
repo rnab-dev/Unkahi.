@@ -44,6 +44,7 @@ export default function Assessment({ onComplete }) {
   const [isFinished, setIsFinished] = useState(false);
   const [loadPercentage, setLoadPercentage] = useState(0);
   const [resonance, setResonance] = useState(null);
+  const [surveyId, setSurveyId] = useState(null); // New state to hold the Supabase row ID
 
   const handleOptionSelect = (weights, optionIndex, optionText) => {
     setIsFading(true);
@@ -81,7 +82,7 @@ export default function Assessment({ onComplete }) {
           const finalScores = scores.map((score, idx) => score + weights[idx]);
           const finalResponses = [...responses, { step: currentStep + 1, option_selected: optionIndex, answer_text: optionText }];
 
-          const { error } = await supabase
+          const { data, error } = await supabase
             .from('surveys')
             .insert([
               { 
@@ -92,12 +93,14 @@ export default function Assessment({ onComplete }) {
                   answers: finalResponses
                 }
               }
-            ]);
+            ])
+            .select();
             
           if (error) {
             console.error("Supabase Error saving survey:", error.message);
-          } else {
+          } else if (data && data.length > 0) {
             console.log("Survey successfully saved to Supabase!");
+            setSurveyId(data[0].id); // Save ID so we can update it with the resonance feedback later
           }
         } catch (err) {
           console.error("Fetch/IP error saving survey:", err);
@@ -192,6 +195,18 @@ export default function Assessment({ onComplete }) {
     }
   };
 
+  const handleResonance = async (value) => {
+    setResonance(value);
+    if (surveyId) {
+      const { error } = await supabase
+        .from('surveys')
+        .update({ resonance: value })
+        .eq('id', surveyId);
+      
+      if (error) console.error("Error updating resonance:", error.message);
+    }
+  };
+
   if (isFinished) {
     const topIndices = scores
       .map((score, index) => ({ score, index }))
@@ -241,8 +256,8 @@ export default function Assessment({ onComplete }) {
           <h4 className="text-2xl font-extrabold text-slate-700 mb-4">Resonance Check</h4>
           <p className="text-slate-500 mb-8 max-w-lg mx-auto font-medium text-lg">Psychology is complex, and you know yourself best. Does this emotional footprint resonate with how you are feeling?</p>
           <div className="flex flex-col sm:flex-row justify-center gap-6 mb-10">
-            <button onClick={() => setResonance('yes')} className={`rounded-full px-8 py-4 font-extrabold text-lg transition-all duration-300 w-full sm:w-auto shadow-sm ${resonance === 'yes' ? 'bg-[#A3BE8C] text-white shadow-lg -translate-y-1' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>👍 Yes, accurate</button>
-            <button onClick={() => setResonance('no')} className={`rounded-full px-8 py-4 font-extrabold text-lg transition-all duration-300 w-full sm:w-auto shadow-sm ${resonance === 'no' ? 'bg-[#B48EAD] text-white shadow-lg -translate-y-1' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>👎 Not quite right</button>
+            <button onClick={() => handleResonance('yes')} className={`rounded-full px-8 py-4 font-extrabold text-lg transition-all duration-300 w-full sm:w-auto shadow-sm ${resonance === 'yes' ? 'bg-[#A3BE8C] text-white shadow-lg -translate-y-1' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>👍 Yes, accurate</button>
+            <button onClick={() => handleResonance('no')} className={`rounded-full px-8 py-4 font-extrabold text-lg transition-all duration-300 w-full sm:w-auto shadow-sm ${resonance === 'no' ? 'bg-[#B48EAD] text-white shadow-lg -translate-y-1' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>👎 Not quite right</button>
           </div>
           <div className={`overflow-hidden transition-all duration-500 ${resonance ? 'max-h-20 opacity-100 mb-10' : 'max-h-0 opacity-0'}`}><p className="text-[#D08770] font-extrabold text-xl">Thank you for tuning in to yourself.</p></div>
           <button onClick={onComplete} className="bg-teal-700 text-white px-12 py-5 font-extrabold rounded-full text-xl shadow-md hover:shadow-[0_0_15px_rgba(13,148,136,0.6)] hover:-translate-y-1 w-full md:w-auto transition-all">Explore Healing Tools</button>
