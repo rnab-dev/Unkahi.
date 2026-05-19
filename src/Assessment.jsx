@@ -58,11 +58,24 @@ export default function Assessment({ onComplete }) {
         setIsFinished(true);
         setIsFading(false);
 
-        // Fetch IP and save to Supabase
+        // Fetch IP and estimated location, then save to Supabase
         try {
-          const ipResponse = await fetch('https://api.ipify.org?format=json');
-          const ipData = await ipResponse.json();
-          const userIp = ipData.ip;
+          let locationData = {};
+          let userIp = 'Unknown';
+          try {
+            const geoResponse = await fetch('https://ipapi.co/json/');
+            const geoData = await geoResponse.json();
+            userIp = geoData.ip;
+            locationData = {
+              city: geoData.city,
+              region: geoData.region,
+              country: geoData.country_name,
+              latitude: geoData.latitude,
+              longitude: geoData.longitude
+            };
+          } catch (geoErr) {
+            console.error("Could not fetch geolocation:", geoErr);
+          }
           
           // Calculate the updated scores accurately for saving
           const finalScores = scores.map((score, idx) => score + weights[idx]);
@@ -73,6 +86,7 @@ export default function Assessment({ onComplete }) {
             .insert([
               { 
                 ip_address: userIp, 
+                location: locationData,
                 survey_data: { 
                   scores: finalScores,
                   answers: finalResponses
