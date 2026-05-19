@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Radar, Bar } from 'react-chartjs-2';
 import { STORY_PHASES } from './AssessmentData';
+import { supabase } from './supabaseClient';
 import {
   Chart as ChartJS,
   RadialLinearScale,
@@ -38,22 +39,55 @@ const INSIGHTS = {
 export default function Assessment({ onComplete }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [scores, setScores] = useState([0, 0, 0, 0, 0, 0]); 
+  const [responses, setResponses] = useState([]);
   const [isFading, setIsFading] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [loadPercentage, setLoadPercentage] = useState(0);
   const [resonance, setResonance] = useState(null);
 
-  const handleOptionSelect = (weights) => {
+  const handleOptionSelect = (weights, optionIndex, optionText) => {
     setIsFading(true);
     setScores(prev => prev.map((score, idx) => score + weights[idx]));
+    setResponses(prev => [...prev, { step: currentStep + 1, option_selected: optionIndex, answer_text: optionText }]);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       if (currentStep < STORY_PHASES.length - 1) {
         setCurrentStep(prev => prev + 1);
         setIsFading(false);
       } else {
         setIsFinished(true);
         setIsFading(false);
+
+        // Fetch IP and save to Supabase
+        try {
+          const ipResponse = await fetch('https://api.ipify.org?format=json');
+          const ipData = await ipResponse.json();
+          const userIp = ipData.ip;
+          
+          // Calculate the updated scores accurately for saving
+          const finalScores = scores.map((score, idx) => score + weights[idx]);
+          const finalResponses = [...responses, { step: currentStep + 1, option_selected: optionIndex, answer_text: optionText }];
+
+          const { error } = await supabase
+            .from('surveys')
+            .insert([
+              { 
+                ip_address: userIp, 
+                survey_data: { 
+                  scores: finalScores,
+                  answers: finalResponses
+                }
+              }
+            ]);
+            
+          if (error) {
+            console.error("Supabase Error saving survey:", error.message);
+          } else {
+            console.log("Survey successfully saved to Supabase!");
+          }
+        } catch (err) {
+          console.error("Fetch/IP error saving survey:", err);
+        }
       }
     }, 300); 
   };
@@ -220,7 +254,7 @@ export default function Assessment({ onComplete }) {
           {phase.options.map((opt, idx) => (
             <button
               key={idx}
-              onClick={() => handleOptionSelect(opt.weights)}
+              onClick={() => handleOptionSelect(opt.weights, idx, opt.text)}
               className="bg-white/80 hover:bg-white rounded-[1.5rem] w-full h-auto min-h-[4rem] text-left p-4 sm:p-5 text-sm sm:text-base font-bold text-slate-600 hover:text-teal-700 flex items-center justify-between group shadow-sm border border-white transition-all hover:-translate-y-1 hover:shadow-md"
             >
               <span className="pr-4 leading-snug">{opt.text}</span>
