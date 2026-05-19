@@ -99,8 +99,11 @@ function App() {
         {viewMap[currentView]()}
       </div>
 
-      <footer className="mt-auto py-6 text-center text-slate-500/80 font-medium text-xs tracking-widest z-10 relative uppercase">
-        An Arnab Initiative
+      <footer className="mt-auto py-6 text-center text-slate-500/80 font-medium text-xs tracking-widest z-10 relative flex flex-col items-center gap-2">
+        <span className="uppercase">An Arnab Initiative</span>
+        <span className="normal-case text-[0.65rem] max-w-md px-4 opacity-75 tracking-normal">
+          🔒 Privacy Note: To help us understand and support our global community, we momentarily collect your approximate regional location (like city or country).
+        </span>
       </footer>
     </div>
   );
