@@ -35,18 +35,21 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
 
       <div className="w-full max-w-3xl text-center space-y-6 md:space-y-8 mb-20 md:mb-32 px-4">
         <h2 className="text-4xl md:text-6xl font-extrabold text-slate-800 tracking-tight leading-tight">
-          Map Your Inner Landscape. <br/><span className="text-purple-600">Find Your Safe Harbor.</span>
+          कुछ बातें Unkahi हैं... and that's okay.
         </h2>
         <p className="text-xl text-slate-600 leading-relaxed font-medium mx-auto max-w-2xl">
-          A quiet, guided journey to understand and release what your nervous system holds, leading you toward greater clarity and self-regulation.
+          पर उन्हें अकेले carry करना ज़रूरी नहीं। A 100% safe, private space for those heavy emotions जो किसी को समझा नहीं सकते। Let's untangle them together.
         </p>
-        <div className="pt-8">
+        <div className="pt-8 flex flex-col items-center">
           <button 
             onClick={() => onNavigate('assessment')}
             className="bg-teal-700 text-white px-12 py-5 font-extrabold rounded-full text-xl shadow-md hover:shadow-[0_0_15px_rgba(13,148,136,0.6)] hover:-translate-y-1 transition-all"
           >
-            Begin Assessment
+            Take the First Step
           </button>
+          <p className="text-xs text-slate-500 mt-3">
+            🔒 100% Anonymous. Your data never leaves your device.
+          </p>
         </div>
       </div>
 
