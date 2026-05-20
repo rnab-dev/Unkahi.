@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from './supabaseClient';
+import { useLocalNLP } from './hooks/useLocalNLP';
 
 export function BreathingRoom({ onBack }) {
   const [phase, setPhase] = useState('Breathe In'); 
@@ -168,40 +171,81 @@ export function GroundingMatrix({ onBack }) {
 export function LetGoBox({ onBack }) {
   const [text, setText] = useState('');
   const [isReleasing, setIsReleasing] = useState(false);
+  
+  // Real-time NLP
+  const { analyzeText } = useLocalNLP();
+  const [startWeight, setStartWeight] = useState(null);
 
-  const handleRelease = () => {
+  useEffect(() => {
+    // Only capture the first significant emotional weight as the "start" point
+    if (text.length > 20 && startWeight === null) {
+      analyzeText(text).then(res => {
+        if (res && res.emotionalWeight) setStartWeight(res.emotionalWeight);
+      });
+    }
+  }, [text, startWeight, analyzeText]);
+
+  const handleRelease = async () => {
     if (!text.trim()) return;
     setIsReleasing(true);
+    
+    // Calculate final weight before burning
+    const finalRes = await analyzeText(text);
+    const endWeight = finalRes ? finalRes.emotionalWeight : 0;
+    
+    // Abstract telemetry: Log the emotional shift, NEVER the text.
+    try {
+      await supabase.from('ml_telemetry').insert([{
+        event_type: 'burn_journal_release',
+        abstract_payload: { startWeight, endWeight, shift: endWeight - startWeight }
+      }]);
+    } catch (e) {
+      console.error("Telemetry error", e);
+    }
+
     setTimeout(() => {
       setText('');
       setIsReleasing(false);
-    }, 1000); 
+      setStartWeight(null);
+    }, 2000); // 2 second burn animation
   };
 
   return (
-    <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-indigo-500/10 rounded-[3rem] px-6 py-10 sm:px-12 sm:pt-10 sm:pb-16 mt-6 sm:mt-10 max-w-2xl w-full mx-auto flex flex-col items-center transform-gpu">
-      {/* 1. Strict Toolbar Header (Isolated) */}
-      <div className="flex items-start justify-start w-full">
+    <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-indigo-500/10 rounded-[3rem] px-6 py-10 sm:px-12 sm:pt-10 sm:pb-16 mt-6 sm:mt-10 max-w-2xl w-full mx-auto flex flex-col items-center transform-gpu relative overflow-hidden">
+      
+      {/* Cinematic Fire Glow on Release */}
+      <AnimatePresence>
+        {isReleasing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.5, 0.2, 0.8, 0] }}
+            transition={{ duration: 2, ease: "easeInOut" }}
+            className="absolute inset-0 bg-gradient-to-t from-orange-500/40 via-red-500/20 to-transparent pointer-events-none rounded-[3rem] z-0 mix-blend-color-burn"
+          />
+        )}
+      </AnimatePresence>
+
+      <div className="flex items-start justify-start w-full relative z-10">
         <button onClick={onBack} className="text-slate-400 hover:text-pink-600 font-bold uppercase tracking-widest text-xs transition-colors mb-6 sm:mb-8">
           ← Return
         </button>
       </div>
 
-      {/* 2. Isolated Centered Title Contaner */}
-      <div className="flex flex-col items-center justify-center text-center w-full pb-10">
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-[#B48EAD] tracking-tight">The "Let Go" Box</h2>
+      <div className="flex flex-col items-center justify-center text-center w-full pb-10 relative z-10">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-[#B48EAD] tracking-tight">"Burn After Reading" Journal</h2>
         <p className="text-slate-500 mt-4 text-center max-w-md mx-auto text-lg font-medium leading-relaxed">
           Write down a heavy thought. Click release, and watch it dissolve from your system permanently. (None of this is saved).
         </p>
       </div>
       
-      <div className="w-full mb-10 overflow-hidden rounded-[2rem] bg-white/50 max-w-xl">
+      <div className="w-full mb-10 overflow-hidden rounded-[2rem] bg-white/50 max-w-xl relative z-10">
         <textarea 
           style={{
             opacity: isReleasing ? 0 : 1,
-            transform: isReleasing ? 'translate3d(0, -20px, 0)' : 'translate3d(0, 0, 0)',
+            transform: isReleasing ? 'translate3d(0, -30px, 0)' : 'translate3d(0, 0, 0)',
+            filter: isReleasing ? 'blur(10px) drop-shadow(0 0 20px rgba(239, 68, 68, 0.8))' : 'none',
           }}
-          className={`w-full h-48 p-8 text-slate-700 bg-transparent border border-white/60 placeholder-slate-400 shadow-inner focus:ring-2 focus:ring-purple-300 outline-none resize-none transition-all duration-300 ease-out text-lg font-medium transform-gpu will-change-transform`}
+          className={`w-full h-48 p-8 text-slate-700 bg-transparent border border-white/60 placeholder-slate-400 shadow-inner focus:ring-2 focus:ring-purple-300 outline-none resize-none transition-all duration-[2000ms] ease-in text-lg font-medium transform-gpu will-change-transform`}
           placeholder="I have been carrying..."
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -212,9 +256,105 @@ export function LetGoBox({ onBack }) {
       <button 
         onClick={handleRelease}
         disabled={!text.trim() || isReleasing}
-        className="bg-purple-500 hover:bg-purple-600 text-white px-16 py-5 rounded-full font-extrabold text-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0 transform-gpu will-change-transform"
+        className="bg-purple-500 hover:bg-orange-600 text-white px-16 py-5 rounded-full font-extrabold text-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0 transform-gpu will-change-transform relative z-10"
       >
-        {isReleasing ? 'Evaporating...' : 'Release'}
+        {isReleasing ? 'Incinerating...' : 'Release'}
+      </button>
+    </div>
+  );
+}
+
+export function BilateralStimulation({ onBack }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioCtxRef = useRef(null);
+  const oscRef = useRef(null);
+  const pannerRef = useRef(null);
+  const timerRef = useRef(null);
+  const [panState, setPanState] = useState(0); // -1 left, 1 right
+
+  const stopAudio = () => {
+    if (oscRef.current) {
+      try {
+        oscRef.current.stop();
+        oscRef.current.disconnect();
+      } catch (e) {}
+      oscRef.current = null;
+    }
+    if (timerRef.current) clearInterval(timerRef.current);
+    setIsPlaying(false);
+  };
+
+  const startAudio = () => {
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    const ctx = audioCtxRef.current;
+    
+    const osc = ctx.createOscillator();
+    const panner = ctx.createStereoPanner();
+    const gainNode = ctx.createGain();
+
+    // Soft, deep hum (Binaural base)
+    osc.type = 'sine';
+    osc.frequency.value = 174; // Solfeggio frequency for pain reduction
+
+    gainNode.gain.value = 0.5;
+
+    osc.connect(panner);
+    panner.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    osc.start();
+    oscRef.current = osc;
+    pannerRef.current = panner;
+
+    // Pan cycle
+    let isLeft = true;
+    timerRef.current = setInterval(() => {
+      const val = isLeft ? -1 : 1;
+      panner.pan.setTargetAtTime(val, ctx.currentTime, 0.5);
+      setPanState(val);
+      isLeft = !isLeft;
+    }, 2000); // 2 second sweeps
+
+    setIsPlaying(true);
+  };
+
+  useEffect(() => {
+    return stopAudio; // Cleanup on unmount
+  }, []);
+
+  return (
+    <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-indigo-500/10 rounded-[3rem] px-6 py-10 sm:px-12 sm:pt-10 sm:pb-16 mt-6 sm:mt-10 max-w-2xl w-full mx-auto flex flex-col items-center transform-gpu relative overflow-hidden">
+      <div className="flex items-start justify-start w-full relative z-10">
+        <button onClick={() => { stopAudio(); onBack(); }} className="text-slate-400 hover:text-indigo-600 font-bold uppercase tracking-widest text-xs transition-colors mb-6 sm:mb-8">
+          ← Return
+        </button>
+      </div>
+
+      <div className="flex flex-col items-center justify-center text-center w-full pb-10 relative z-10">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-indigo-500 tracking-tight">Bilateral Stimulation</h2>
+        <p className="text-slate-500 mt-4 text-center max-w-md mx-auto text-lg font-medium leading-relaxed">
+          Please wear headphones. Follow the glowing orb with your eyes without turning your head. This process soothes the amygdala.
+        </p>
+      </div>
+      
+      <div className="w-full h-48 bg-slate-900/10 rounded-[2rem] relative mb-10 overflow-hidden border border-indigo-900/10 flex items-center">
+        {isPlaying && (
+          <motion.div
+            initial={{ x: "-100%" }}
+            animate={{ x: panState === -1 ? "-140%" : "140%" }}
+            transition={{ duration: 2, ease: "easeInOut" }}
+            className="w-16 h-16 rounded-full bg-indigo-400 shadow-[0_0_40px_rgba(129,140,248,0.8)] absolute left-1/2 -ml-8"
+          />
+        )}
+      </div>
+
+      <button 
+        onClick={isPlaying ? stopAudio : startAudio}
+        className={`${isPlaying ? 'bg-rose-500 hover:bg-rose-600' : 'bg-indigo-500 hover:bg-indigo-600'} text-white px-16 py-5 rounded-full font-extrabold text-xl shadow-md hover:-translate-y-1 transition-all w-64`}
+      >
+        {isPlaying ? 'Stop' : 'Start Process'}
       </button>
     </div>
   );

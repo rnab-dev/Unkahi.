@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 
 export default function LandingPage({ onNavigate, isTransitioning }) {
   const pillars = [
@@ -9,108 +10,155 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
   ];
 
   return (
-    <div className={`w-full max-w-6xl mx-auto flex flex-col items-center justify-start pb-24 transition-all duration-500 ease-out transform ${isTransitioning ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'}`}>
+    <div className={`relative min-h-screen w-full flex flex-col items-center transition-all duration-500 ease-out transform ${isTransitioning ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'} overflow-hidden`}>
       
-      {/* 2. The Clarity Hero Section */}
-      <nav className="w-full flex flex-col md:flex-row items-center justify-between mb-16 md:mb-24 mt-8 px-4 md:px-8 gap-6 md:gap-0">
-        <div className="flex flex-col text-center md:text-left">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-[#475569] tracking-widest uppercase">UNKAHI</h1>
-          <p className="text-[0.65rem] md:text-sm font-bold text-slate-500 uppercase tracking-widest mt-1">Interactive Psychological Safety</p>
-        </div>
-        <div className="flex items-center gap-3 md:gap-4 flex-wrap justify-center">
-          <button 
-            onClick={() => onNavigate('kids')}
-            className="bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold py-2 px-4 md:px-6 rounded-full shadow-sm hover:shadow-md transition-all text-xs md:text-sm uppercase tracking-wide"
-          >
-            🧸 Kids Mode
-          </button>
-          <button 
-            onClick={() => window.location.replace('https://www.google.com')}
-            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 md:px-6 rounded-full shadow-sm hover:shadow-md transition-all text-xs md:text-sm uppercase tracking-wide"
-          >
-            Quick Exit
-          </button>
-        </div>
-      </nav>
-
-      <div className="w-full max-w-3xl text-center space-y-6 md:space-y-8 mb-20 md:mb-32 px-4">
-        <h2 className="text-4xl md:text-6xl font-extrabold text-slate-800 tracking-tight leading-tight">
-          कुछ बातें Unkahi हैं... and that's okay.
-        </h2>
-        <p className="text-xl text-slate-600 leading-relaxed font-medium mx-auto max-w-2xl">
-          पर उन्हें अकेले carry करना ज़रूरी नहीं। A 100% safe, private space for those heavy emotions जो किसी को समझा नहीं सकते। Let's untangle them together.
-        </p>
-        <div className="pt-8 flex flex-col items-center">
-          <button 
-            onClick={() => onNavigate('assessment')}
-            className="bg-teal-700 text-white px-12 py-5 font-extrabold rounded-full text-xl shadow-md hover:shadow-[0_0_15px_rgba(13,148,136,0.6)] hover:-translate-y-1 transition-all"
-          >
-            Take the First Step
-          </button>
-          <p className="text-xs text-slate-500 mt-3">
-            🔒 100% Anonymous. Your data never leaves your device.
-          </p>
-        </div>
+      {/* 1. Ambient Breathing Orbs */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <motion.div
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-[10%] -left-[20%] w-[150vw] h-[150vw] md:w-[60vw] md:h-[60vw] bg-purple-300/30 md:bg-purple-300/20 rounded-full blur-[100px] md:blur-[120px]"
+        />
+        <motion.div
+          animate={{ scale: [1, 1.15, 1] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute top-[30%] -right-[30%] w-[140vw] h-[140vw] md:w-[50vw] md:h-[50vw] bg-teal-200/30 md:bg-teal-200/20 rounded-full blur-[100px] md:blur-[140px]"
+        />
+        <motion.div
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute -bottom-[20%] left-[10%] w-[160vw] h-[160vw] md:w-[70vw] md:h-[70vw] bg-rose-200/30 md:bg-rose-200/20 rounded-full blur-[120px] md:blur-[160px]"
+        />
       </div>
 
-      {/* 3. Detailed Project Insights & Clinical Blueprint */}
-      <div className="w-full bg-white/40 backdrop-blur-md rounded-[3rem] border border-white/50 p-10 md:p-16 mb-24 shadow-xl shadow-indigo-500/5">
-        <h3 className="text-3xl font-extrabold text-slate-700 mb-6 text-center">About the Project</h3>
-        <p className="text-lg text-slate-600 leading-relaxed font-medium text-center max-w-4xl mx-auto mb-16">
-          This private, algorithmic tool analyzes your nervous system's behavior across a detailed 24-hour narrative. By exploring how you wake, move through the day, and prepare for sleep, we generate a highly accurate, non-invasive psychological footprint, distinguishing between routine stress and deep-seated fawning, hypervigilance, and somatic dissociation responses.
-        </p>
+      {/* 2. Cinematic Noise Overlay */}
+      <div 
+        className="fixed inset-0 z-0 pointer-events-none opacity-30 mix-blend-overlay"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        }}
+      />
+
+      {/* Main Content Wrapper */}
+      <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center justify-start pb-24">
         
-        <h3 className="text-2xl font-extrabold text-slate-700 mb-8 text-center border-b border-white/50 pb-4 max-w-sm mx-auto">Clinical Pillars</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {pillars.map((pillar, idx) => (
-            <div key={idx} className="bg-white/60 backdrop-blur-lg border border-white p-8 rounded-[2.5rem] flex flex-col shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="text-4xl drop-shadow-sm">{pillar.icon}</div>
-                <h4 className="text-xl font-black text-[#5C6E84] leading-tight">{pillar.title}</h4>
-              </div>
-              <p className="text-slate-600 mb-6 leading-relaxed font-medium flex-grow">{pillar.desc}</p>
-              <div className="bg-[#A3BE8C]/10 rounded-2xl p-4 border border-[#A3BE8C]/20">
-                <p className="text-xs font-black text-[#A3BE8C] uppercase tracking-wider mb-1">Actionable Tip</p>
-                <p className="text-sm text-slate-700 font-bold">{pillar.tip}</p>
-              </div>
+        {/* The Clarity Hero Section */}
+        <nav className="w-full flex flex-col md:flex-row items-center justify-between mb-16 md:mb-24 mt-8 px-4 md:px-8 gap-6 md:gap-0">
+          <div className="flex flex-col text-center md:text-left relative">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-900 tracking-[0.2em] uppercase drop-shadow-sm">UNKAHI</h1>
+            <p className="text-[0.65rem] md:text-sm font-bold text-slate-500 uppercase tracking-[0.25em] mt-1">Interactive Psychological Safety</p>
+          </div>
+          <div className="flex items-center gap-3 md:gap-4 flex-wrap justify-center">
+            <button 
+              onClick={() => onNavigate('kids')}
+              className="bg-purple-100/80 backdrop-blur-md border border-purple-200/50 hover:bg-purple-200 text-purple-700 font-bold py-2.5 px-5 md:px-6 rounded-full shadow-[0_4px_12px_rgba(168,85,247,0.15)] hover:shadow-[0_6px_16px_rgba(168,85,247,0.25)] transition-all text-xs md:text-sm uppercase tracking-wider"
+            >
+              🧸 Kids Mode
+            </button>
+            <button 
+              onClick={() => window.location.replace('https://www.google.com')}
+              className="bg-gradient-to-r from-red-500 to-rose-600 border border-red-400 text-white font-bold py-2.5 px-5 md:px-6 rounded-full shadow-[0_4px_12px_rgba(239,68,68,0.25)] hover:shadow-[0_6px_16px_rgba(239,68,68,0.4)] transition-all text-xs md:text-sm uppercase tracking-wider"
+            >
+              Quick Exit
+            </button>
+          </div>
+        </nav>
+
+        <div className="w-full max-w-4xl text-center space-y-8 md:space-y-10 mb-20 md:mb-32 px-4 relative">
+          {/* Subtle glow behind the text to enhance readability over the noise */}
+          <div className="absolute inset-0 bg-white/20 blur-3xl -z-10 rounded-[100px] pointer-events-none" />
+          
+          <h2 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-slate-800 to-slate-600 tracking-tight leading-[1.15] drop-shadow-sm">
+            कुछ बातें Unkahi हैं... <br className="hidden md:block"/> <span className="text-slate-700">and that's okay.</span>
+          </h2>
+          <p className="text-xl md:text-2xl text-slate-600/90 leading-relaxed font-medium mx-auto max-w-2xl drop-shadow-sm">
+            पर उन्हें अकेले carry करना ज़रूरी नहीं। A 100% safe, private space for those heavy emotions जो किसी को समझा नहीं सकते। <span className="text-teal-700 font-bold block mt-2">Let's untangle them together.</span>
+          </p>
+          
+          <div className="pt-10 flex flex-col items-center">
+            <div className="relative group">
+              {/* 3. Guiding Light CTA Pulse */}
+              <motion.div
+                animate={{ scale: [1, 1.4], opacity: [0.5, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeOut" }}
+                className="absolute inset-0 bg-teal-400 rounded-full pointer-events-none z-0"
+              />
+              <button 
+                onClick={() => onNavigate('assessment')}
+                className="relative z-10 bg-gradient-to-b from-teal-500 to-teal-700 text-white px-12 py-5 font-black rounded-full text-xl md:text-2xl shadow-[0_8px_30px_rgba(13,148,136,0.4)] hover:shadow-[0_12px_40px_rgba(13,148,136,0.6)] hover:-translate-y-1.5 transition-all duration-300 border border-teal-400/50 tracking-wide flex items-center gap-3"
+              >
+                Take the First Step <span className="text-teal-200 group-hover:translate-x-1 transition-transform">→</span>
+              </button>
             </div>
-          ))}
+            
+            <div className="flex items-center gap-2 text-xs md:text-sm text-slate-500 mt-6 relative z-10 bg-white/40 px-5 py-2 rounded-full backdrop-blur-sm border border-white/50 shadow-sm font-medium">
+              <span>🔒</span>
+              <span>100% Anonymous. Your data never leaves your device.</span>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* 4. Healing Tools & Kids Mode ('Little UNKAHI') */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-10 px-4">
-        <div className="bg-white/40 backdrop-blur-md rounded-[3rem] border border-white/50 p-10 shadow-xl shadow-teal-500/5 text-center flex flex-col items-center">
-          <span className="text-5xl mb-6">🌸</span>
-          <h3 className="text-2xl font-extrabold text-teal-800 mb-4">Healing Tools</h3>
-          <p className="text-slate-600 mb-8 font-medium">
-            Discover the <strong>Breathing Room</strong> and <strong>The Let Go Box</strong> with beautiful, detailed Claymorphic CSS animations. Soft concentric glowing rings for breath, blurring and dissolving text for release.
+        {/* Detailed Project Insights & Clinical Blueprint */}
+        <div className="w-full bg-white/40 backdrop-blur-md rounded-[3rem] border border-white/50 p-10 md:p-16 mb-24 shadow-xl shadow-indigo-500/5">
+          <h3 className="text-3xl font-extrabold text-slate-700 mb-6 text-center">About the Project</h3>
+          <p className="text-lg text-slate-600 leading-relaxed font-medium text-center max-w-4xl mx-auto mb-16">
+            This private, algorithmic tool analyzes your nervous system's behavior across a detailed 24-hour narrative. By exploring how you wake, move through the day, and prepare for sleep, we generate a highly accurate, non-invasive psychological footprint, distinguishing between routine stress and deep-seated fawning, hypervigilance, and somatic dissociation responses.
           </p>
-          <button 
-            onClick={() => onNavigate('tools')}
-            className="mt-auto bg-white hover:bg-teal-50 text-teal-700 font-bold py-3 px-8 rounded-full border border-white shadow-sm hover:shadow hover:-translate-y-1 transition-all"
-          >
-            Explore Triage Tools
-          </button>
+          
+          <h3 className="text-2xl font-extrabold text-slate-700 mb-8 text-center border-b border-white/50 pb-4 max-w-sm mx-auto">Clinical Pillars</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {pillars.map((pillar, idx) => (
+              <div key={idx} className="bg-white/60 backdrop-blur-lg border border-white p-8 rounded-[2.5rem] flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="text-4xl drop-shadow-sm">{pillar.icon}</div>
+                  <h4 className="text-xl font-black text-[#5C6E84] leading-tight">{pillar.title}</h4>
+                </div>
+                <p className="text-slate-600 mb-6 leading-relaxed font-medium flex-grow">{pillar.desc}</p>
+                <div className="bg-[#A3BE8C]/10 rounded-2xl p-4 border border-[#A3BE8C]/20">
+                  <p className="text-xs font-black text-[#A3BE8C] uppercase tracking-wider mb-1">Actionable Tip</p>
+                  <p className="text-sm text-slate-700 font-bold">{pillar.tip}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-        
-        <div className="bg-white/40 backdrop-blur-md rounded-[3rem] border border-white/50 p-10 shadow-xl shadow-purple-500/5 text-center flex flex-col items-center">
-          <span className="text-5xl mb-6">🧸</span>
-          <h3 className="text-2xl font-extrabold text-purple-800 mb-4">Kids Mode (Little UNKAHI)</h3>
-          <p className="text-slate-600 mb-8 font-medium">
-            A dedicated, soft toy-box aesthetic to teach safe boundaries implicitly through the Brave Bear story game. A narrative expanded into 10 gentle lessons.
-          </p>
-          <button 
-            onClick={() => onNavigate('kids')}
-            className="mt-auto bg-white hover:bg-purple-50 text-purple-700 font-bold py-3 px-8 rounded-full border border-white shadow-sm hover:shadow hover:-translate-y-1 transition-all"
-          >
-            Open Toy Box
-          </button>
+
+        {/* Healing Tools & Kids Mode ('Little UNKAHI') */}
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-10 px-4">
+          <div className="bg-white/40 backdrop-blur-md rounded-[3rem] border border-white/50 p-10 shadow-xl shadow-teal-500/5 text-center flex flex-col items-center">
+            <span className="text-5xl mb-6">🌸</span>
+            <h3 className="text-2xl font-extrabold text-teal-800 mb-4">Healing Tools</h3>
+            <p className="text-slate-600 mb-8 font-medium">
+              Discover the <strong>Breathing Room</strong> and <strong>The Let Go Box</strong> with beautiful, detailed Claymorphic CSS animations. Soft concentric glowing rings for breath, blurring and dissolving text for release.
+            </p>
+            <button 
+              onClick={() => onNavigate('tools')}
+              className="mt-auto bg-white hover:bg-teal-50 text-teal-700 font-bold py-3 px-8 rounded-full border border-white shadow-sm hover:shadow hover:-translate-y-1 transition-all"
+            >
+              Explore Triage Tools
+            </button>
+          </div>
+          
+          <div className="bg-white/40 backdrop-blur-md rounded-[3rem] border border-white/50 p-10 shadow-xl shadow-purple-500/5 text-center flex flex-col items-center">
+            <span className="text-5xl mb-6">🧸</span>
+            <h3 className="text-2xl font-extrabold text-purple-800 mb-4">Kids Mode (Little UNKAHI)</h3>
+            <p className="text-slate-600 mb-8 font-medium">
+              A dedicated, soft toy-box aesthetic to teach safe boundaries implicitly through the Brave Bear story game. A narrative expanded into 10 gentle lessons.
+            </p>
+            <button 
+              onClick={() => onNavigate('kids')}
+              className="mt-auto bg-white hover:bg-purple-50 text-purple-700 font-bold py-3 px-8 rounded-full border border-white shadow-sm hover:shadow hover:-translate-y-1 transition-all"
+            >
+              Open Toy Box
+            </button>
+          </div>
         </div>
-      </div>
-{/* 5. Pacing & Animations spacing bottom */}
-      <div className="mt-16 text-slate-400 text-sm font-medium tracking-wide">
-        Take your time. You are safe here.
+
+        {/* Pacing & Animations spacing bottom */}
+        <div className="mt-16 text-slate-400 text-sm font-medium tracking-wide">
+          Take your time. You are safe here.
+        </div>
+
       </div>
     </div>
   );

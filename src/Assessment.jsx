@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Radar, Bar } from 'react-chartjs-2';
 import { STORY_PHASES } from './AssessmentData';
 import { supabase } from './supabaseClient';
+import { useEmotionalBaseline } from './hooks/useEmotionalBaseline';
+import { logAssessmentComplete } from './utils/supabaseTelemetry';
 import {
   Chart as ChartJS,
   RadialLinearScale,
@@ -38,13 +40,48 @@ const INSIGHTS = {
 
 export default function Assessment({ onComplete }) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [hasCompletedSomatic, setHasCompletedSomatic] = useState(false);
+  const [selectedSomatic, setSelectedSomatic] = useState([]);
   const [scores, setScores] = useState([0, 0, 0, 0, 0, 0]); 
   const [responses, setResponses] = useState([]);
   const [isFading, setIsFading] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [loadPercentage, setLoadPercentage] = useState(0);
   const [resonance, setResonance] = useState(null);
-  const [surveyId, setSurveyId] = useState(null); // New state to hold the Supabase row ID
+  const [surveyId, setSurveyId] = useState(null); // Holds the Supabase row ID for resonance update
+
+  const SOMATIC_OPTIONS = [
+    { id: 'chest', label: 'Tight Chest / Heart Racing', icon: '🫀', weights: [3, 0, 0, 0, 0, 0] }, // Hypervigilance
+    { id: 'numb', label: 'Numb / Floaty / Disconnected', icon: '🧊', weights: [0, 0, 0, 4, 0, 0] }, // Somatic Disconnect
+    { id: 'stomach', label: 'Heavy Stomach / Nausea', icon: '🦋', weights: [0, 0, 3, 0, 0, 0] }, // Guilt
+    { id: 'jaw', label: 'Clenched Jaw / Shoulders', icon: '⚡', weights: [1, 0, 0, 0, 0, 2] }, // Env Control
+    { id: 'eyes', label: 'Averting Eyes / Hiding', icon: '🙈', weights: [0, 2, 0, 0, 2, 0] }, // Collapse / Isolation
+    { id: 'fidget', label: 'Pacing / Can\'t Sit Still', icon: '🌪️', weights: [2, 0, 0, 0, 0, 1] }
+  ];
+
+  const handleSomaticSubmit = () => {
+    setIsFading(true);
+    
+    // Apply selected weights
+    let newScores = [...scores];
+    selectedSomatic.forEach(id => {
+      const opt = SOMATIC_OPTIONS.find(o => o.id === id);
+      if (opt) {
+        newScores = newScores.map((s, idx) => s + opt.weights[idx]);
+      }
+    });
+    setScores(newScores);
+
+    setTimeout(() => {
+      setHasCompletedSomatic(true);
+      setIsFading(false);
+    }, 400);
+  };
+
+  // ── Edge AI: Local Baseline Learner ──────────────────────────────────────
+  // The hook reads from IndexedDB on mount and exposes saveScore() + baseline data.
+  // All raw score history stays local — only abstract telemetry goes to Supabase.
+  const { saveScore, isTriggered, baseline, stdDev } = useEmotionalBaseline();
 
   const handleOptionSelect = (weights, optionIndex, optionText) => {
     setIsFading(true);
@@ -59,51 +96,58 @@ export default function Assessment({ onComplete }) {
         setIsFinished(true);
         setIsFading(false);
 
-        // Fetch IP and estimated location, then save to Supabase
-        try {
-          let locationData = {};
-          let userIp = 'Unknown';
-          try {
-            const geoResponse = await fetch('https://ipapi.co/json/');
-            const geoData = await geoResponse.json();
-            userIp = geoData.ip;
-            locationData = {
-              city: geoData.city,
-              region: geoData.region,
-              country: geoData.country_name,
-              latitude: geoData.latitude,
-              longitude: geoData.longitude
-            };
-          } catch (geoErr) {
-            console.error("Could not fetch geolocation:", geoErr);
-          }
-          
-          // Calculate the updated scores accurately for saving
-          const finalScores = scores.map((score, idx) => score + weights[idx]);
-          const finalResponses = [...responses, { step: currentStep + 1, option_selected: optionIndex, answer_text: optionText }];
+        // ── Step 1: Compute the final scores (weights applied to last answer) ──
+        const finalScores = scores.map((score, idx) => score + weights[idx]);
+        const finalResponses = [...responses, { step: currentStep + 1, option_selected: optionIndex, answer_text: optionText }];
 
+        // ── Step 2: Normalize to 0-100 and save LOCALLY to IndexedDB ──────────
+        // PRIVACY: Only a single integer reaches local storage — no text, no answers.
+        const assumedMax = 40;
+        const normalizedScore = Math.min(100, Math.round(
+          (finalScores.reduce((a, b) => a + b, 0) / assumedMax) * 100
+        ));
+
+        // saveScore() writes { date, score } to IndexedDB and recomputes the
+        // 7-day rolling average + anomaly flag inside useEmotionalBaseline.
+        // We await it so the hook state is fresh before we read isTriggered below.
+        await saveScore(normalizedScore);
+
+        // ── Step 3: Push ONLY abstract ML telemetry to Supabase ───────────────
+        // logAssessmentComplete sends: session_id (anon UUID), event_type,
+        // anomaly_detected (bool), baseline_score, std_deviation.
+        // It NEVER sends: finalScores array, finalResponses, text, or IP.
+        logAssessmentComplete({ isTriggered, baseline, stdDev })
+          .then(({ success, error: telErr }) => {
+            if (success) {
+              console.log('[Unkahi] ✅ Anonymous telemetry synced to Supabase.');
+            } else {
+              console.warn('[Unkahi] Telemetry sync failed (non-critical):', telErr);
+            }
+          });
+
+        // ── Step 4: Also keep the existing surveys table write (resonance, etc.) 
+        try {
           const { data, error } = await supabase
             .from('surveys')
-            .insert([
-              { 
-                ip_address: userIp, 
-                location: locationData,
-                survey_data: { 
-                  scores: finalScores,
-                  answers: finalResponses
-                }
+            .insert([{ 
+              // We intentionally omit ip_address and location here —
+              // the app is moving toward a zero-PII data model.
+              survey_data: { 
+                score_normalized: normalizedScore,
+                dimension_count: finalScores.length
+                // finalResponses and raw scores are NOT stored server-side.
               }
-            ])
+            }])
             .select();
             
           if (error) {
-            console.error("Supabase Error saving survey:", error.message);
+            console.error('Supabase Error saving survey:', error.message);
           } else if (data && data.length > 0) {
-            console.log("Survey successfully saved to Supabase!");
-            setSurveyId(data[0].id); // Save ID so we can update it with the resonance feedback later
+            console.log('Survey record saved to Supabase.');
+            setSurveyId(data[0].id);
           }
         } catch (err) {
-          console.error("Fetch/IP error saving survey:", err);
+          console.error('Error saving survey record:', err);
         }
       }
     }, 300); 
@@ -214,6 +258,18 @@ export default function Assessment({ onComplete }) {
       .slice(0, 2)
       .map(item => item.index);
 
+    // Map the highest scoring category to a specific triage tool
+    const TOOL_MAP = [
+      { id: 'somatic', name: 'Somatic Healer', emoji: '🧬' }, // Hypervigilance
+      { id: 'ground', name: 'Grounding Matrix', emoji: '🧱' }, // Boundary Collapse
+      { id: 'letgo', name: 'Let Go Box', emoji: '💨' }, // Intrusive Guilt
+      { id: 'ground', name: 'Grounding Matrix', emoji: '🧱' }, // Somatic Disconnect
+      { id: 'emdr', name: 'Bilateral Audio', emoji: '🎧' }, // Isolation (Panic)
+      { id: 'breathe', name: 'Blooming Lotus', emoji: '🌸' } // Env. Control
+    ];
+    
+    const suggestedTool = TOOL_MAP[topIndices[0]];
+
     return (
       <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-indigo-500/10 rounded-[2.5rem] p-8 md:p-12 mt-4 opacity-100 max-w-4xl mx-auto w-full transition-all duration-500">
         {/* Results view logic is unchanged from before, kept for component integrity */}
@@ -260,7 +316,67 @@ export default function Assessment({ onComplete }) {
             <button onClick={() => handleResonance('no')} className={`rounded-full px-8 py-4 font-extrabold text-lg transition-all duration-300 w-full sm:w-auto shadow-sm ${resonance === 'no' ? 'bg-[#B48EAD] text-white shadow-lg -translate-y-1' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>👎 Not quite right</button>
           </div>
           <div className={`overflow-hidden transition-all duration-500 ${resonance ? 'max-h-20 opacity-100 mb-10' : 'max-h-0 opacity-0'}`}><p className="text-[#D08770] font-extrabold text-xl">Thank you for tuning in to yourself.</p></div>
-          <button onClick={onComplete} className="bg-teal-700 text-white px-12 py-5 font-extrabold rounded-full text-xl shadow-md hover:shadow-[0_0_15px_rgba(13,148,136,0.6)] hover:-translate-y-1 w-full md:w-auto transition-all">Explore Healing Tools</button>
+          
+          <div className="bg-teal-50 border border-teal-200 rounded-2xl p-6 mb-8 max-w-sm mx-auto">
+            <p className="text-teal-700 font-bold text-sm uppercase tracking-wider mb-2">Recommended for You Now</p>
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-4xl">{suggestedTool.emoji}</span>
+              <span className="text-2xl font-black text-teal-900">{suggestedTool.name}</span>
+            </div>
+          </div>
+
+          <button onClick={() => onComplete(scores, suggestedTool.id)} className="bg-teal-700 text-white px-12 py-5 font-extrabold rounded-full text-xl shadow-md hover:shadow-[0_0_15px_rgba(13,148,136,0.6)] hover:-translate-y-1 w-full md:w-auto transition-all">
+            Begin {suggestedTool.name}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasCompletedSomatic) {
+    return (
+      <div className={`bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-indigo-500/10 rounded-[2.5rem] p-6 md:p-10 max-w-4xl w-full mx-auto transition-all duration-300 ease-in-out transform box-border ${isFading ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'}`}>
+        <div className="w-full flex-col flex h-full items-center text-center">
+          <div className="mb-4 text-[10px] sm:text-xs font-bold tracking-widest text-[#D08770] uppercase text-center bg-white/70 py-2 px-4 rounded-full inline-block mx-auto border border-white shadow-sm">
+            Phase 0 | The Body Speaks First
+          </div>
+          <p className="text-xl md:text-2xl text-slate-700 mb-2 leading-relaxed font-extrabold px-2 md:px-6">
+            Where are you holding tension right now?
+          </p>
+          <p className="text-sm text-slate-500 font-medium mb-8">Trauma lives in the body. Select any physical sensations you feel (or skip if none).</p>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full mb-8">
+            {SOMATIC_OPTIONS.map(opt => {
+              const isSelected = selectedSomatic.includes(opt.id);
+              return (
+                <button
+                  key={opt.id}
+                  onClick={() => {
+                    setSelectedSomatic(prev => 
+                      prev.includes(opt.id) ? prev.filter(id => id !== opt.id) : [...prev, opt.id]
+                    );
+                  }}
+                  className={`p-4 rounded-2xl flex flex-col items-center gap-3 transition-all duration-300 border ${
+                    isSelected 
+                      ? 'bg-teal-50 border-teal-200 shadow-inner scale-95' 
+                      : 'bg-white/80 border-white shadow-sm hover:shadow-md hover:-translate-y-1'
+                  }`}
+                >
+                  <span className="text-3xl">{opt.icon}</span>
+                  <span className={`text-xs font-bold ${isSelected ? 'text-teal-700' : 'text-slate-600'}`}>
+                    {opt.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <button 
+            onClick={handleSomaticSubmit}
+            className="bg-slate-800 text-white px-10 py-4 font-extrabold rounded-full text-lg shadow-md hover:bg-slate-700 hover:-translate-y-1 transition-all"
+          >
+            {selectedSomatic.length > 0 ? 'Continue' : 'I feel neutral right now'}
+          </button>
         </div>
       </div>
     );
