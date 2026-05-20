@@ -12,30 +12,30 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
   return (
     <div className={`relative min-h-screen w-full flex flex-col items-center transition-all duration-500 ease-out transform ${isTransitioning ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'} overflow-hidden`}>
       
-      {/* 1. Ambient Breathing Orbs */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+      {/* 1. Ambient Breathing Orbs - Hardware Accelerated */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden transform-gpu">
         <motion.div
-          animate={{ scale: [1, 1.1, 1] }}
+          animate={{ scale: [1, 1.05, 1], y: [0, -10, 0] }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-[10%] -left-[20%] w-[150vw] h-[150vw] md:w-[60vw] md:h-[60vw] bg-purple-300/30 md:bg-purple-300/20 rounded-full blur-[100px] md:blur-[120px]"
+          className="absolute -top-[10%] -left-[20%] w-[150vw] h-[150vw] md:w-[60vw] md:h-[60vw] bg-purple-300/30 md:bg-purple-300/20 rounded-full blur-[80px] md:blur-[120px] will-change-transform"
         />
         <motion.div
-          animate={{ scale: [1, 1.15, 1] }}
+          animate={{ scale: [1, 1.08, 1], x: [0, 15, 0] }}
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute top-[30%] -right-[30%] w-[140vw] h-[140vw] md:w-[50vw] md:h-[50vw] bg-teal-200/30 md:bg-teal-200/20 rounded-full blur-[100px] md:blur-[140px]"
+          className="absolute top-[30%] -right-[30%] w-[140vw] h-[140vw] md:w-[50vw] md:h-[50vw] bg-teal-200/30 md:bg-teal-200/20 rounded-full blur-[80px] md:blur-[140px] will-change-transform"
         />
         <motion.div
-          animate={{ scale: [1, 1.1, 1] }}
+          animate={{ scale: [1, 1.05, 1], y: [0, 15, 0] }}
           transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute -bottom-[20%] left-[10%] w-[160vw] h-[160vw] md:w-[70vw] md:h-[70vw] bg-rose-200/30 md:bg-rose-200/20 rounded-full blur-[120px] md:blur-[160px]"
+          className="absolute -bottom-[20%] left-[10%] w-[160vw] h-[160vw] md:w-[70vw] md:h-[70vw] bg-rose-200/30 md:bg-rose-200/20 rounded-full blur-[80px] md:blur-[160px] will-change-transform"
         />
       </div>
 
-      {/* 2. Cinematic Noise Overlay */}
+      {/* 2. Cinematic Noise Overlay - Mobile Optimized */}
       <div 
-        className="fixed inset-0 z-0 pointer-events-none opacity-30 mix-blend-overlay"
+        className="fixed inset-0 z-0 pointer-events-none opacity-20 transform-gpu"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
         }}
       />
 
@@ -71,27 +71,24 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
           <h2 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-slate-800 to-slate-600 tracking-tight leading-[1.15] drop-shadow-sm">
             कुछ बातें Unkahi हैं... <br className="hidden md:block"/> <span className="text-slate-700">and that's okay.</span>
           </h2>
-          <p className="text-xl md:text-2xl text-slate-600/90 leading-relaxed font-medium mx-auto max-w-2xl drop-shadow-sm">
+          <p className="text-xl md:text-2xl text-slate-600/90 leading-relaxed font-medium mx-auto max-w-2xl drop-shadow-sm mt-6 md:mt-8">
             पर उन्हें अकेले carry करना ज़रूरी नहीं। A 100% safe, private space for those heavy emotions जो किसी को समझा नहीं सकते। <span className="text-teal-700 font-bold block mt-2">Let's untangle them together.</span>
           </p>
           
-          <div className="pt-10 flex flex-col items-center">
-            <div className="relative group">
-              {/* 3. Guiding Light CTA Pulse */}
-              <motion.div
-                animate={{ scale: [1, 1.4], opacity: [0.5, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeOut" }}
-                className="absolute inset-0 bg-teal-400 rounded-full pointer-events-none z-0"
-              />
+          <div className="pt-10 flex flex-col items-center w-full">
+            <div className="relative group w-full px-4 sm:w-auto sm:px-0">
               <button 
                 onClick={() => onNavigate('assessment')}
-                className="relative z-10 bg-gradient-to-b from-teal-500 to-teal-700 text-white px-12 py-5 font-black rounded-full text-xl md:text-2xl shadow-[0_8px_30px_rgba(13,148,136,0.4)] hover:shadow-[0_12px_40px_rgba(13,148,136,0.6)] hover:-translate-y-1.5 transition-all duration-300 border border-teal-400/50 tracking-wide flex items-center gap-3"
+                className="relative w-full sm:w-auto justify-center z-10 bg-gradient-to-b from-teal-500 to-teal-700 text-white px-8 py-4 md:px-12 md:py-5 font-black rounded-full text-lg md:text-2xl shadow-[0_8px_30px_rgba(13,148,136,0.3)] hover:shadow-[0_12px_40px_rgba(13,148,136,0.5)] hover:-translate-y-1 transition-all duration-300 border border-teal-400/50 tracking-wide flex items-center gap-3 overflow-hidden"
               >
-                Take the First Step <span className="text-teal-200 group-hover:translate-x-1 transition-transform">→</span>
+                {/* Subtle shine sweep on hover */}
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                <span className="relative z-10">Take the First Step</span> 
+                <span className="text-teal-200 group-hover:translate-x-1 transition-transform relative z-10">→</span>
               </button>
             </div>
             
-            <div className="flex items-center gap-2 text-xs md:text-sm text-slate-500 mt-6 relative z-10 bg-white/40 px-5 py-2 rounded-full backdrop-blur-sm border border-white/50 shadow-sm font-medium">
+            <div className="flex items-center gap-1 md:gap-2 text-[0.65rem] md:text-sm text-slate-500 mt-6 relative z-10 bg-white/40 px-4 py-2 md:px-5 md:py-2 rounded-full backdrop-blur-sm border border-white/50 shadow-sm font-medium">
               <span>🔒</span>
               <span>100% Anonymous. Your data never leaves your device.</span>
             </div>
