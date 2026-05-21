@@ -50,6 +50,12 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
           </div>
           <div className="flex items-center gap-3 md:gap-4 flex-wrap justify-center">
             <button 
+              onClick={() => onNavigate('mydata')}
+              className="bg-indigo-100/80 backdrop-blur-md border border-indigo-200/50 hover:bg-indigo-200 text-indigo-700 font-bold py-2.5 px-5 md:px-6 rounded-full shadow-[0_4px_12px_rgba(99,102,241,0.15)] hover:shadow-[0_6px_16px_rgba(99,102,241,0.25)] transition-all text-xs md:text-sm uppercase tracking-wider flex items-center gap-2"
+            >
+              📊 Your Data
+            </button>
+            <button 
               onClick={() => onNavigate('kids')}
               className="bg-purple-100/80 backdrop-blur-md border border-purple-200/50 hover:bg-purple-200 text-purple-700 font-bold py-2.5 px-5 md:px-6 rounded-full shadow-[0_4px_12px_rgba(168,85,247,0.15)] hover:shadow-[0_6px_16px_rgba(168,85,247,0.25)] transition-all text-xs md:text-sm uppercase tracking-wider"
             >
@@ -85,6 +91,22 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
                 <span className="relative z-10">Take the First Step</span> 
                 <span className="text-teal-200 group-hover:translate-x-1 transition-transform relative z-10">→</span>
+              </button>
+            </div>
+
+            <div className="mt-6 flex flex-col sm:flex-row items-center gap-3 md:gap-4 w-full px-4 sm:w-auto sm:px-0">
+              <button 
+                onClick={() => onNavigate('support')}
+                className="relative w-full sm:w-auto justify-center z-10 bg-white/70 hover:bg-white/90 text-rose-600 px-6 py-3.5 font-bold rounded-full text-sm md:text-base shadow-sm hover:shadow-md transition-all border border-rose-100 flex items-center gap-2"
+              >
+                <span className="text-lg">🚨</span> Crisis Helplines
+              </button>
+
+              <button 
+                onClick={() => onNavigate('legal')}
+                className="relative w-full sm:w-auto justify-center z-10 bg-white/70 hover:bg-white/90 text-indigo-700 px-6 py-3.5 font-bold rounded-full text-sm md:text-base shadow-sm hover:shadow-md transition-all border border-indigo-100 flex items-center gap-2"
+              >
+                <span className="text-lg">⚖️</span> Know Your Rights
               </button>
             </div>
             
@@ -152,9 +174,28 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
         </div>
 
         {/* Pacing & Animations spacing bottom */}
-        <div className="mt-16 text-slate-400 text-sm font-medium tracking-wide">
+        <div className="mt-16 text-slate-400 text-sm font-medium tracking-wide text-center">
           Take your time. You are safe here.
         </div>
+
+        {/* Global Footer */}
+        <footer className="mt-20 w-full border-t border-slate-200/50 pt-8 pb-4 flex flex-col md:flex-row items-center justify-between px-4">
+          <button
+            onClick={() => onNavigate('mydata')}
+            className="flex items-center gap-3 opacity-60 hover:opacity-100 transition-opacity group"
+          >
+            <span className="text-xl">📊</span>
+            <div className="text-left">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-500">Your Data</p>
+              <p className="text-slate-700 font-bold hover:text-indigo-600 transition-colors text-sm group-hover:text-indigo-600">
+                View Unified Insights Dashboard →
+              </p>
+            </div>
+          </button>
+          <p className="text-xs font-medium text-slate-400 mt-6 md:mt-0">
+            Unkahi © {new Date().getFullYear()} · Edge-AI Privacy
+          </p>
+        </footer>
 
       </div>
     </div>

@@ -48,7 +48,7 @@ export default function SomaticHealer({ onBack }) {
                 You have manually shifted your nervous system back into safety.
               </p>
               <button onClick={onBack} className="bg-emerald-600 text-white px-10 py-4 rounded-full font-bold shadow-md hover:bg-emerald-700 transition-all">
-                Return to Dashboard
+                Return to Your Data
               </button>
             </motion.div>
           )}

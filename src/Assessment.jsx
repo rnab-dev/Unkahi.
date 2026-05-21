@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Radar, Bar } from 'react-chartjs-2';
-import { STORY_PHASES } from './AssessmentData';
+import { STORY_PHASES, DEEP_DIVE_PHASES } from './AssessmentData';
 import { supabase } from './supabaseClient';
 import { useEmotionalBaseline } from './hooks/useEmotionalBaseline';
 import { logAssessmentComplete } from './utils/supabaseTelemetry';
@@ -38,7 +38,15 @@ const INSIGHTS = {
   5: { title: 'Environment Control', icon: '🧩', desc: 'You are trying to meticulously manage your surroundings. This micromanagement brings a necessary sense of predictability amidst chaos.', tip: 'Allow one tiny, inconsequential thing to be "out of place" today and notice that you are still safe.' }
 };
 
-export default function Assessment({ onComplete }) {
+const TOOLS = [
+  { id: 'breathe', name: 'Blooming Lotus', emoji: '🌸', color: 'from-pink-400 to-rose-400', desc: 'Vagus nerve reset with guided breath.' },
+  { id: 'ground', name: 'Grounding Matrix', emoji: '🧱', color: 'from-indigo-400 to-blue-400', desc: 'Anchor back to the present moment.' },
+  { id: 'letgo', name: 'Let Go Box', emoji: '💨', color: 'from-purple-400 to-violet-400', desc: 'Write, process and release what weighs on you.' },
+  { id: 'emdr', name: 'Bilateral Audio', emoji: '🎧', color: 'from-indigo-500 to-blue-500', desc: 'Audio-visual pacing to soothe the amygdala.' },
+  { id: 'somatic', name: 'Somatic Healer', emoji: '🧬', color: 'from-emerald-500 to-teal-500', desc: 'Polyvagal resets & progressive muscle flushing.' },
+];
+
+export default function Assessment({ onComplete, onNavigate }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [hasCompletedSomatic, setHasCompletedSomatic] = useState(false);
   const [selectedSomatic, setSelectedSomatic] = useState([]);
@@ -49,6 +57,11 @@ export default function Assessment({ onComplete }) {
   const [loadPercentage, setLoadPercentage] = useState(0);
   const [resonance, setResonance] = useState(null);
   const [surveyId, setSurveyId] = useState(null); // Holds the Supabase row ID for resonance update
+
+  // ── Deep Dive State ────────────────────────────────────────────────────────
+  const [deepDiveState, setDeepDiveState] = useState('idle'); // 'idle' | 'warning' | 'active' | 'done'
+  const [deepDiveStep, setDeepDiveStep] = useState(0);
+  const [deepDiveScores, setDeepDiveScores] = useState([0, 0, 0, 0, 0, 0]);
 
   const SOMATIC_OPTIONS = [
     { id: 'chest', label: 'Tight Chest / Heart Racing', icon: '🫀', weights: [3, 0, 0, 0, 0, 0] }, // Hypervigilance
@@ -100,22 +113,18 @@ export default function Assessment({ onComplete }) {
         const finalScores = scores.map((score, idx) => score + weights[idx]);
         const finalResponses = [...responses, { step: currentStep + 1, option_selected: optionIndex, answer_text: optionText }];
 
+        // ── Notify App.jsx immediately with basic scores ─────────────────────
+        onComplete && onComplete(finalScores, null, 'basic');
+
         // ── Step 2: Normalize to 0-100 and save LOCALLY to IndexedDB ──────────
-        // PRIVACY: Only a single integer reaches local storage — no text, no answers.
         const assumedMax = 40;
         const normalizedScore = Math.min(100, Math.round(
           (finalScores.reduce((a, b) => a + b, 0) / assumedMax) * 100
         ));
 
-        // saveScore() writes { date, score } to IndexedDB and recomputes the
-        // 7-day rolling average + anomaly flag inside useEmotionalBaseline.
-        // We await it so the hook state is fresh before we read isTriggered below.
         await saveScore(normalizedScore);
 
         // ── Step 3: Push ONLY abstract ML telemetry to Supabase ───────────────
-        // logAssessmentComplete sends: session_id (anon UUID), event_type,
-        // anomaly_detected (bool), baseline_score, std_deviation.
-        // It NEVER sends: finalScores array, finalResponses, text, or IP.
         logAssessmentComplete({ isTriggered, baseline, stdDev })
           .then(({ success, error: telErr }) => {
             if (success) {
@@ -130,12 +139,9 @@ export default function Assessment({ onComplete }) {
           const { data, error } = await supabase
             .from('surveys')
             .insert([{ 
-              // We intentionally omit ip_address and location here —
-              // the app is moving toward a zero-PII data model.
               survey_data: { 
                 score_normalized: normalizedScore,
                 dimension_count: finalScores.length
-                // finalResponses and raw scores are NOT stored server-side.
               }
             }])
             .select();
@@ -251,7 +257,7 @@ export default function Assessment({ onComplete }) {
     }
   };
 
-  if (isFinished) {
+  if (isFinished && deepDiveState === 'idle') {
     const topIndices = scores
       .map((score, index) => ({ score, index }))
       .sort((a, b) => b.score - a.score)
@@ -325,9 +331,286 @@ export default function Assessment({ onComplete }) {
             </div>
           </div>
 
-          <button onClick={() => onComplete(scores, suggestedTool.id)} className="bg-teal-700 text-white px-12 py-5 font-extrabold rounded-full text-xl shadow-md hover:shadow-[0_0_15px_rgba(13,148,136,0.6)] hover:-translate-y-1 w-full md:w-auto transition-all">
-            Begin {suggestedTool.name}
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center flex-wrap">
+            <button
+              onClick={() => { onComplete && onComplete(scores, suggestedTool.id); if (onNavigate) onNavigate(suggestedTool.id); }}
+              className="bg-teal-700 text-white px-10 py-4 font-extrabold rounded-full text-lg shadow-md hover:shadow-[0_0_15px_rgba(13,148,136,0.6)] hover:-translate-y-1 transition-all"
+            >
+              Begin {suggestedTool.name}
+            </button>
+            <button
+              onClick={() => setDeepDiveState('warning')}
+              className="bg-white border-2 border-purple-200 text-purple-700 px-8 py-4 font-extrabold rounded-full text-sm hover:bg-purple-50 hover:-translate-y-1 transition-all shadow-sm"
+            >
+              🔬 Go Deeper — I want more clarity
+            </button>
+          </div>
+          {loadPercentage >= 40 && (
+            <p className="text-xs text-purple-400 font-bold mt-4 text-center">
+              ✦ Our system detected something worth exploring further. The deeper assessment uses a different psychological lens.
+            </p>
+          )}
+        </div>
+
+        {/* ── Or choose your own tool ────────────────────────────── */}
+        <div className="mt-10 pt-8 border-t border-white/50">
+          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 text-center">Or choose your own path</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {TOOLS.map(tool => (
+              <button
+                key={tool.id}
+                onClick={() => { onComplete && onComplete(scores, tool.id); if (onNavigate) onNavigate(tool.id); }}
+                className={`bg-gradient-to-br ${tool.color} p-4 rounded-2xl text-left hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group`}
+              >
+                <span className="text-2xl block mb-2">{tool.emoji}</span>
+                <p className="text-white font-black text-xs">{tool.name}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Your Data CTA ─────────────────────────────────────────── */}
+        {onNavigate && (
+          <div className="mt-8 pt-6 border-t border-white/50 flex justify-center">
+            <button
+              onClick={() => onNavigate('mydata')}
+              className="flex items-center gap-3 bg-white/70 hover:bg-indigo-50 border border-indigo-200 text-indigo-700 px-8 py-4 rounded-full font-bold transition-all hover:-translate-y-1 shadow-sm hover:shadow-md text-sm"
+            >
+              <span>📊</span>
+              <div className="text-left">
+                <p className="text-xs font-black uppercase tracking-widest text-indigo-500">Your Data</p>
+                <p className="font-bold">View Unified Insights Dashboard →</p>
+              </div>
+            </button>
+          </div>
+        )}
+
+      </div>
+    );
+  }
+
+  // ── Deep Dive: Content Warning Screen ─────────────────────────────────────
+  if (deepDiveState === 'warning') {
+    return (
+      <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-purple-500/10 rounded-[2.5rem] p-8 md:p-12 max-w-4xl w-full mx-auto">
+        <div className="flex flex-col items-center text-center">
+          <div className="text-5xl mb-6">🌊</div>
+          <div className="mb-3 text-[10px] font-bold tracking-widest text-purple-400 uppercase bg-purple-50 border border-purple-100 py-1.5 px-4 rounded-full">
+            Phase 2 · Deeper Look
+          </div>
+          <h2 className="text-3xl font-black text-slate-700 mb-4 leading-tight">Going a little deeper.</h2>
+          <p className="text-slate-500 font-medium max-w-md mx-auto leading-relaxed mb-2">
+            The next 10 questions use a different technique — they ask about imagery, memory, and feelings rather than situations.
+          </p>
+          <p className="text-slate-400 text-sm font-bold mb-10">
+            Take a breath. There are no right or wrong answers. You can stop at any time.
+          </p>
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 max-w-md w-full mb-10">
+            <p className="text-amber-700 font-bold text-sm">⚠ Some questions may bring up old memories or feelings. If at any point you feel overwhelmed, please close the assessment and use the Grounding Matrix or Breathing Room tools.</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button
+              onClick={() => setDeepDiveState('active')}
+              className="bg-purple-600 text-white px-10 py-4 font-extrabold rounded-full text-lg shadow-md hover:-translate-y-1 transition-all"
+            >
+              I'm ready — let's go deeper
+            </button>
+            <button
+              onClick={() => setDeepDiveState('idle')}
+              className="bg-white border border-slate-200 text-slate-500 px-8 py-4 font-bold rounded-full text-sm hover:bg-slate-50 transition-all"
+            >
+              Go back to results
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Deep Dive: Active Questions ────────────────────────────────────────────
+  if (deepDiveState === 'active') {
+    const deepPhase = DEEP_DIVE_PHASES[deepDiveStep];
+
+    const handleDeepDiveSelect = (weights) => {
+      setIsFading(true);
+      const updatedScores = deepDiveScores.map((s, i) => s + weights[i]);
+
+      setTimeout(() => {
+        if (deepDiveStep < DEEP_DIVE_PHASES.length - 1) {
+          setDeepDiveScores(updatedScores);
+          setDeepDiveStep(prev => prev + 1);
+          setIsFading(false);
+        } else {
+          setDeepDiveScores(updatedScores);
+          setDeepDiveState('done');
+          setIsFading(false);
+          // Notify App.jsx immediately with combined scores
+          const combined = scores.map((s, i) => s + updatedScores[i]);
+          onComplete && onComplete(combined, null, 'deepdive');
+        }
+      }, 300);
+    };
+
+    return (
+      <div className={`bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-purple-500/10 rounded-[2.5rem] p-6 md:p-10 max-w-4xl w-full mx-auto transition-all duration-300 ease-in-out transform ${
+        isFading ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'
+      }`}>
+        <div className="w-full flex flex-col">
+          <div className="flex items-center justify-between mb-6">
+            <div className="text-[10px] font-bold tracking-widest text-purple-400 uppercase bg-purple-50 border border-purple-100 py-1.5 px-3 rounded-full">
+              {deepPhase.phase} · {deepDiveStep + 1} of {DEEP_DIVE_PHASES.length}
+            </div>
+            <button onClick={() => setDeepDiveState('idle')} className="text-slate-300 hover:text-slate-500 text-xs font-bold uppercase tracking-widest transition-colors">
+              ✕ Stop
+            </button>
+          </div>
+
+          <p className="text-xl md:text-2xl text-slate-700 mb-10 leading-relaxed text-center font-extrabold px-2 md:px-6">
+            {deepPhase.text}
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {deepPhase.options.map((opt, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleDeepDiveSelect(opt.weights)}
+                className="bg-white/80 hover:bg-purple-50 rounded-[1.5rem] w-full h-auto min-h-[4rem] text-left p-4 sm:p-5 text-sm sm:text-base font-bold text-slate-600 hover:text-purple-700 flex items-center justify-between group shadow-sm border border-white hover:border-purple-200 transition-all hover:-translate-y-1 hover:shadow-md"
+              >
+                <span className="pr-4 leading-snug">{opt.text}</span>
+                <span className="opacity-0 group-hover:opacity-100 text-purple-500 transition-opacity font-black text-xl">→</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-8 flex justify-center gap-2">
+            {DEEP_DIVE_PHASES.map((_, idx) => (
+              <div
+                key={idx}
+                className={`h-2 w-2 rounded-full transition-all duration-500 ${
+                  idx === deepDiveStep ? 'bg-purple-500 scale-150 shadow-sm' :
+                  idx < deepDiveStep ? 'bg-purple-300' : 'bg-slate-200'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Deep Dive: Combined Results ─────────────────────────────────────────────
+  if (deepDiveState === 'done') {
+    const combined = scores.map((s, i) => s + deepDiveScores[i]);
+    const combinedTotal = combined.reduce((a, b) => a + b, 0);
+    const combinedMax = 80; // 40 per phase × 2
+    const combinedLoad = Math.min(100, Math.round((combinedTotal / combinedMax) * 100));
+
+    const topCombined = combined
+      .map((score, index) => ({ score, index }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 2)
+      .map(item => item.index);
+
+    const TOOL_MAP_COMBINED = [
+      { id: 'somatic', name: 'Somatic Healer', emoji: '🧬' },
+      { id: 'ground', name: 'Grounding Matrix', emoji: '🧱' },
+      { id: 'letgo', name: 'Let Go Box', emoji: '💨' },
+      { id: 'ground', name: 'Grounding Matrix', emoji: '🧱' },
+      { id: 'emdr', name: 'Bilateral Audio', emoji: '🎧' },
+      { id: 'breathe', name: 'Blooming Lotus', emoji: '🌸' }
+    ];
+    const finalTool = TOOL_MAP_COMBINED[topCombined[0]];
+
+    const combinedChartData = {
+      labels: ['Hypervigilance', 'Boundary Collapse', 'Intrusive Guilt', 'Somatic Disconnect', 'Isolation', 'Env. Control'],
+      datasets: [{
+        label: 'Cross-Validated Footprint',
+        data: combined,
+        backgroundColor: 'rgba(139, 92, 246, 0.2)',
+        borderColor: 'rgba(139, 92, 246, 0.8)',
+        borderWidth: 3,
+        pointBackgroundColor: 'rgba(139, 92, 246, 1)',
+        pointBorderColor: '#fff',
+        pointRadius: 5,
+      }]
+    };
+
+    return (
+      <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-purple-500/10 rounded-[2.5rem] p-8 md:p-12 mt-4 max-w-4xl mx-auto w-full">
+        {/* Cross-validated badge */}
+        <div className="flex items-center justify-center gap-3 mb-10">
+          <span className="text-3xl">🔬</span>
+          <div>
+            <p className="text-xs font-black uppercase tracking-widest text-purple-500">Cross-Validated Reading</p>
+            <h2 className="text-2xl font-black text-slate-700 leading-tight">Deeper Analysis Complete</h2>
+          </div>
+        </div>
+
+        <p className="text-center text-slate-400 font-medium text-sm mb-10 max-w-lg mx-auto">
+          This combines two different psychological measurement approaches — behavioural scenario responses and projective imagery. Together they give a more complete picture.
+        </p>
+
+        {/* Combined load bar */}
+        <div className="mb-12">
+          <div className="flex justify-between items-end mb-3">
+            <h3 className="text-lg font-extrabold text-slate-700">Combined Nervous System Load</h3>
+            <span className="text-4xl font-black text-purple-400">{combinedLoad}%</span>
+          </div>
+          <div className="h-6 w-full bg-slate-100 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-[1500ms] ease-out"
+              style={{ width: `${combinedLoad}%`, background: 'linear-gradient(to right, #a78bfa, #818cf8, #c084fc)' }}
+            />
+          </div>
+        </div>
+
+        {/* Radar chart */}
+        <div className="bg-white/60 border border-white p-6 rounded-[2rem] shadow-sm mb-10 flex flex-col items-center">
+          <h4 className="text-base font-bold text-slate-600 mb-4">Cross-Validated Emotional Footprint</h4>
+          <div className="w-full max-w-[280px]">
+            <Radar data={combinedChartData} options={chartOptions} />
+          </div>
+        </div>
+
+        {/* Top insights */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+          {topCombined.map(idx => {
+            const insight = INSIGHTS[idx];
+            return (
+              <div key={idx} className="bg-white/60 border border-white p-6 rounded-[2rem] shadow-sm flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-3xl">{insight.icon}</span>
+                  <h4 className="text-lg font-black text-purple-500">{insight.title}</h4>
+                </div>
+                <p className="text-slate-500 text-sm font-medium leading-relaxed flex-grow mb-4">{insight.desc}</p>
+                <div className="bg-white/80 rounded-xl p-4 border border-white/50">
+                  <p className="text-xs font-black text-emerald-500 uppercase tracking-wider mb-1">Gentle Tip</p>
+                  <p className="text-sm text-slate-700 font-bold">{insight.tip}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* CTA */}
+        <div className="text-center">
+          <p className="text-sm text-slate-400 font-bold mb-6">✦ Both assessments point in the same direction. This is your path forward.</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <button
+              onClick={() => { onComplete && onComplete(combined, finalTool.id); if (onNavigate) onNavigate(finalTool.id); }}
+              className="bg-purple-600 text-white px-12 py-5 font-extrabold rounded-full text-xl shadow-md hover:shadow-[0_0_20px_rgba(139,92,246,0.5)] hover:-translate-y-1 transition-all"
+            >
+              {finalTool.emoji} Begin {finalTool.name}
+            </button>
+            {onNavigate && (
+              <button
+                onClick={() => { onComplete && onComplete(combined, null); onNavigate('mydata'); }}
+                className="flex items-center gap-2 bg-white/70 hover:bg-indigo-50 border border-indigo-200 text-indigo-700 px-6 py-4 rounded-full font-bold transition-all hover:-translate-y-1 shadow-sm text-sm"
+              >
+                <span>📊</span> View Your Data
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );

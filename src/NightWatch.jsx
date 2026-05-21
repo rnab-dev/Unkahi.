@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
-export default function NightWatch({ onNavigate, isTransitioning }) {
+export default function NightWatch({ onNavigate, isTransitioning, onDismiss }) {
   const [hasInteracted, setHasInteracted] = useState(false);
 
   return (
     <div className={`relative min-h-screen w-full flex flex-col items-center justify-center transition-all duration-1000 ease-in-out transform ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'} bg-slate-950 overflow-hidden`}>
+      
+      {/* Skip button */}
+      {onDismiss && (
+        <button
+          onClick={onDismiss}
+          className="absolute top-6 right-6 z-50 text-slate-500 hover:text-slate-200 font-bold uppercase tracking-widest text-xs border border-slate-700 hover:border-slate-500 px-4 py-2 rounded-full transition-all"
+        >
+          Skip →
+        </button>
+      )}
       
       {/* Deep Night Ambient Background */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">

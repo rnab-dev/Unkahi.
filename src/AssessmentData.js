@@ -119,6 +119,126 @@ export const STORY_PHASES = [
   }
 ];
 
+// ──────────────────────────────────────────────────────────────────────────────
+// DEEP-DIVE PHASES — Confirmatory Assessment (Phase 2)
+// Uses projective, associative, and memory-based questioning techniques.
+// Cross-mapped to the same 6 pillars but approached from a completely different
+// psychological angle: imagery, temporal memory regression, social mirror response.
+// The nervous system answers before the conscious mind can filter.
+// ──────────────────────────────────────────────────────────────────────────────
+export const DEEP_DIVE_PHASES = [
+  {
+    phase: "Layer A: Inner Weather",
+    title: "The Weather System",
+    text: "Close your eyes for a moment. If your internal emotional world right now were a weather pattern, which image fits most naturally?",
+    options: [
+      { text: "A storm that is always on the horizon — I can feel it coming but it never quite arrives.", weights: [4, 0, 0, 1, 0, 0] },
+      { text: "A thick, still fog where I can barely see what is in front of me.", weights: [0, 0, 0, 4, 1, 0] },
+      { text: "A clear morning — calm, maybe a little cool.", weights: [0, 0, 0, 0, 0, 0] },
+      { text: "A controlled indoor greenhouse — I manage the temperature very deliberately.", weights: [1, 0, 0, 0, 0, 4] }
+    ]
+  },
+  {
+    phase: "Layer A: Inner Weather",
+    title: "The Empty Room",
+    text: "You are moving into a new, unfamiliar room, completely alone. Before you unpack anything, your first involuntary instinct is to...",
+    options: [
+      { text: "Walk the perimeter slowly and check behind the door, curtain, and closet.", weights: [4, 0, 0, 0, 0, 1] },
+      { text: "Stand still in the centre, feeling oddly detached from the space.", weights: [0, 0, 0, 4, 0, 0] },
+      { text: "Begin immediately arranging things in a system that makes sense to me.", weights: [0, 0, 0, 0, 0, 4] },
+      { text: "Feel a wave of relief that no one else is here.", weights: [0, 0, 0, 0, 4, 0] }
+    ]
+  },
+  {
+    phase: "Layer A: Inner Weather",
+    title: "The Injured Animal",
+    text: "You unexpectedly come across a small, wild animal — visibly hurt, frightened, and alone. Without thinking, your very first internal response is...",
+    options: [
+      { text: "An immediate, overwhelming need to help it, even at personal inconvenience.", weights: [0, 3, 1, 0, 0, 0] },
+      { text: "A sharp, piercing ache — almost as if I'm feeling its pain in my own chest.", weights: [0, 0, 0, 3, 0, 0] },
+      { text: "I carefully assess the situation before deciding on a course of action.", weights: [0, 0, 0, 0, 0, 0] },
+      { text: "A guilty feeling — like I should have noticed sooner and prevented this.", weights: [0, 0, 4, 0, 0, 0] }
+    ]
+  },
+  {
+    phase: "Layer B: Memory & Time",
+    title: "The Recalled Phone Call",
+    text: "A specific difficult phone call from your past surfaces in your memory right now. Without choosing which one, your body's immediate physical response to that memory is...",
+    options: [
+      { text: "A cold tightening across my chest and a holding of breath.", weights: [3, 0, 0, 2, 0, 0] },
+      { text: "A sense of going blank — the memory feels strangely far away, like watching a film.", weights: [0, 0, 0, 4, 0, 0] },
+      { text: "A flash of self-blame — wondering what I said or should have said differently.", weights: [0, 0, 4, 0, 0, 0] },
+      { text: "A mild discomfort, processed and then released fairly quickly.", weights: [0, 0, 0, 0, 0, 0] }
+    ]
+  },
+  {
+    phase: "Layer B: Memory & Time",
+    title: "The Childhood Smell",
+    text: "A scent — food, detergent, perfume — suddenly transports you back to a childhood memory you didn't consciously choose. That memory feels...",
+    options: [
+      { text: "Complicated. A mix of warmth and something I'd rather not stay in for long.", weights: [1, 0, 2, 1, 0, 0] },
+      { text: "Distant and muted, like it belongs to a different person's life entirely.", weights: [0, 0, 0, 4, 0, 0] },
+      { text: "Predominantly warm and grounding — I like visiting it.", weights: [0, 0, 0, 0, 0, 0] },
+      { text: "Activating. My body feels it before my mind catches up.", weights: [3, 0, 0, 2, 0, 0] }
+    ]
+  },
+  {
+    phase: "Layer B: Memory & Time",
+    title: "The Old Photograph",
+    text: "You stumble upon an old photo of yourself as a child — maybe 6 or 7 years old. Looking at the child in that photo, your most honest internal reaction is...",
+    options: [
+      { text: "A quiet grief — I want to reach into the photo and protect that child.", weights: [0, 0, 3, 0, 2, 0] },
+      { text: "A strange disconnection — that child feels like a stranger to me.", weights: [0, 0, 0, 4, 0, 0] },
+      { text: "A sense of gentle recognition — I can still feel the continuity between us.", weights: [0, 0, 0, 0, 0, 0] },
+      { text: "An urge to quickly put the photo away without looking too long.", weights: [2, 0, 2, 1, 0, 0] }
+    ]
+  },
+  {
+    phase: "Layer C: Social Mirror",
+    title: "The Sincere Compliment",
+    text: "In front of others, someone gives you a sincere, specific, genuine compliment about your character — not your work, but who you are. Your inner response before you say anything is...",
+    options: [
+      { text: "An uncomfortable need to immediately deflect or minimise it.", weights: [0, 3, 1, 0, 0, 0] },
+      { text: "Suspicion — I briefly wonder what they want or what this is leading to.", weights: [3, 0, 0, 0, 1, 0] },
+      { text: "A genuine warm feeling — I let it land.", weights: [0, 0, 0, 0, 0, 0] },
+      { text: "A dissociative flicker — it barely registers, like it was said to someone else.", weights: [0, 0, 0, 4, 0, 0] }
+    ]
+  },
+  {
+    phase: "Layer C: Social Mirror",
+    title: "The Private Anger",
+    text: "Someone wrongs you — clearly, visibly, undeniably. Before you decide how to respond outwardly, your private inner voice says...",
+    options: [
+      { text: "'Maybe I misread the situation. Let me see if I provoked this somehow.'", weights: [0, 0, 4, 0, 0, 0] },
+      { text: "'I feel rage, but I will absolutely not show it. I will handle this perfectly.'", weights: [1, 3, 0, 0, 0, 1] },
+      { text: "'This is not okay. I'm going to address this calmly but directly.'", weights: [0, 0, 0, 0, 0, 0] },
+      { text: "Nothing. My mind goes blank and I simply go quiet and still.", weights: [0, 0, 0, 4, 0, 0] }
+    ]
+  },
+  {
+    phase: "Layer C: Social Mirror",
+    title: "The Request When Empty",
+    text: "You are physically and emotionally spent — genuinely running on empty. Right at this moment, someone you know asks you for a favour. In your body, before you respond...",
+    options: [
+      { text: "A surge of guilt for even wanting to say no.", weights: [0, 0, 4, 0, 0, 0] },
+      { text: "A flat numbness — I agree on autopilot without feeling anything.", weights: [0, 2, 0, 3, 0, 0] },
+      { text: "A clear, protective 'No, not right now' that rises naturally.", weights: [0, 0, 0, 0, 0, 0] },
+      { text: "An anxious calculation — what is the cost of saying no vs. saying yes?", weights: [2, 2, 0, 0, 0, 0] }
+    ]
+  },
+  {
+    phase: "Layer D: Future & Safety",
+    title: "The Safe House",
+    text: "Imagine the version of your life that feels genuinely, deeply safe — 5 years from now, in a home that is truly yours. Close your eyes and notice: who is in it with you?",
+    options: [
+      { text: "A few deeply trusted people — small, chosen, quiet.", weights: [0, 0, 0, 0, 2, 0] },
+      { text: "No one. The safety in the image is specifically the absence of others.", weights: [0, 0, 0, 1, 4, 0] },
+      { text: "People I love, moving freely through a space that feels light.", weights: [0, 0, 0, 0, 0, 0] },
+      { text: "I find it strangely hard to imagine the image clearly at all.", weights: [2, 0, 0, 2, 1, 0] }
+    ]
+  }
+];
+
 export const KIDS_LESSONS = [
   {
     title: "Lesson 1: The Forced Hug",

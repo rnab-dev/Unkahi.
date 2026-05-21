@@ -171,6 +171,8 @@ export function GroundingMatrix({ onBack }) {
 export function LetGoBox({ onBack }) {
   const [text, setText] = useState('');
   const [isReleasing, setIsReleasing] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
   
   // Real-time NLP
   const { analyzeText } = useLocalNLP();
@@ -184,6 +186,41 @@ export function LetGoBox({ onBack }) {
       });
     }
   }, [text, startWeight, analyzeText]);
+
+  const toggleListening = () => {
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Whisper mode requires Chrome or Safari on most devices.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event) => {
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        }
+      }
+      if (finalTranscript) {
+        setText(prev => (prev ? prev + ' ' : '') + finalTranscript.trim());
+      }
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
 
   const handleRelease = async () => {
     if (!text.trim()) return;
@@ -245,12 +282,25 @@ export function LetGoBox({ onBack }) {
             transform: isReleasing ? 'translate3d(0, -30px, 0)' : 'translate3d(0, 0, 0)',
             filter: isReleasing ? 'blur(10px) drop-shadow(0 0 20px rgba(239, 68, 68, 0.8))' : 'none',
           }}
-          className={`w-full h-48 p-8 text-slate-700 bg-transparent border border-white/60 placeholder-slate-400 shadow-inner focus:ring-2 focus:ring-purple-300 outline-none resize-none transition-all duration-[2000ms] ease-in text-lg font-medium transform-gpu will-change-transform`}
+          className={`w-full h-48 p-8 pb-16 text-slate-700 bg-transparent border border-white/60 placeholder-slate-400 shadow-inner focus:ring-2 focus:ring-purple-300 outline-none resize-none transition-all duration-[2000ms] ease-in text-lg font-medium transform-gpu will-change-transform`}
           placeholder="I have been carrying..."
           value={text}
           onChange={(e) => setText(e.target.value)}
           disabled={isReleasing}
         />
+        
+        {/* Whisper Mode Button */}
+        <div className="absolute bottom-4 right-4 z-20">
+          <button
+            onClick={toggleListening}
+            disabled={isReleasing}
+            className={`p-3 rounded-full flex items-center gap-2 transition-all shadow-sm border ${isListening ? 'bg-rose-100 border-rose-300 text-rose-600 animate-pulse' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-500 hover:bg-indigo-50'}`}
+            title="Whisper Mode (Voice to text)"
+          >
+            <span className="text-xl">🎙️</span>
+            {isListening && <span className="text-xs font-bold uppercase tracking-wider pr-2">Listening...</span>}
+          </button>
+        </div>
       </div>
 
       <button 
@@ -267,18 +317,29 @@ export function LetGoBox({ onBack }) {
 export function BilateralStimulation({ onBack }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioCtxRef = useRef(null);
-  const oscRef = useRef(null);
-  const pannerRef = useRef(null);
+  const oscLeftRef = useRef(null);
+  const oscRightRef = useRef(null);
+  const gainNodeRef = useRef(null);
   const timerRef = useRef(null);
   const [panState, setPanState] = useState(0); // -1 left, 1 right
 
   const stopAudio = () => {
-    if (oscRef.current) {
+    if (oscLeftRef.current) {
       try {
-        oscRef.current.stop();
-        oscRef.current.disconnect();
+        oscLeftRef.current.stop();
+        oscLeftRef.current.disconnect();
       } catch (e) {}
-      oscRef.current = null;
+      oscLeftRef.current = null;
+    }
+    if (oscRightRef.current) {
+      try {
+        oscRightRef.current.stop();
+        oscRightRef.current.disconnect();
+      } catch (e) {}
+      oscRightRef.current = null;
+    }
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.setTargetAtTime(0, audioCtxRef.current.currentTime, 0.5);
     }
     if (timerRef.current) clearInterval(timerRef.current);
     setIsPlaying(false);
@@ -290,34 +351,44 @@ export function BilateralStimulation({ onBack }) {
     }
     const ctx = audioCtxRef.current;
     
-    const osc = ctx.createOscillator();
-    const panner = ctx.createStereoPanner();
-    const gainNode = ctx.createGain();
+    // Create master gain to avoid clipping/clicks
+    const masterGain = ctx.createGain();
+    masterGain.gain.value = 0.5;
+    masterGain.connect(ctx.destination);
+    gainNodeRef.current = masterGain;
+    
+    // Left Ear (Base frequency)
+    const oscLeft = ctx.createOscillator();
+    const pannerLeft = ctx.createStereoPanner();
+    oscLeft.type = 'sine';
+    oscLeft.frequency.value = 174; // Solfeggio Base
+    pannerLeft.pan.value = -1; // Hard left
+    oscLeft.connect(pannerLeft);
+    pannerLeft.connect(masterGain);
+    
+    // Right Ear (Base + 4Hz Delta for deep relaxation)
+    const oscRight = ctx.createOscillator();
+    const pannerRight = ctx.createStereoPanner();
+    oscRight.type = 'sine';
+    oscRight.frequency.value = 178; // +4Hz difference
+    pannerRight.pan.value = 1; // Hard right
+    oscRight.connect(pannerRight);
+    pannerRight.connect(masterGain);
 
-    // Soft, deep hum (Binaural base)
-    osc.type = 'sine';
-    osc.frequency.value = 174; // Solfeggio frequency for pain reduction
-
-    gainNode.gain.value = 0.5;
-
-    osc.connect(panner);
-    panner.connect(gainNode);
-    gainNode.connect(ctx.destination);
-
-    osc.start();
-    oscRef.current = osc;
-    pannerRef.current = panner;
-
-    // Pan cycle
-    let isLeft = true;
-    timerRef.current = setInterval(() => {
-      const val = isLeft ? -1 : 1;
-      panner.pan.setTargetAtTime(val, ctx.currentTime, 0.5);
-      setPanState(val);
-      isLeft = !isLeft;
-    }, 2000); // 2 second sweeps
+    oscLeft.start();
+    oscRight.start();
+    
+    oscLeftRef.current = oscLeft;
+    oscRightRef.current = oscRight;
 
     setIsPlaying(true);
+    
+    // Start visual animation timer
+    let isLeft = true;
+    timerRef.current = setInterval(() => {
+      setPanState(isLeft ? -1 : 1);
+      isLeft = !isLeft;
+    }, 2000); // 2 second sweeps
   };
 
   useEffect(() => {
@@ -333,9 +404,9 @@ export function BilateralStimulation({ onBack }) {
       </div>
 
       <div className="flex flex-col items-center justify-center text-center w-full pb-10 relative z-10">
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-indigo-500 tracking-tight">Bilateral Stimulation</h2>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-indigo-500 tracking-tight">Binaural EMDR Therapy</h2>
         <p className="text-slate-500 mt-4 text-center max-w-md mx-auto text-lg font-medium leading-relaxed">
-          Please wear headphones. Follow the glowing orb with your eyes without turning your head. This process soothes the amygdala.
+          <strong>Requires headphones.</strong> Follow the glowing orb with your eyes without turning your head. This process soothes the amygdala while binaural beats (4Hz delta) guide your brainwaves into deep relaxation.
         </p>
       </div>
       

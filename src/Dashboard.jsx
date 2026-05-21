@@ -168,125 +168,6 @@ function CheckInBanner({ daysSince, onNavigate }) {
   );
 }
 
-function JourneyChart({ last7Days, isTriggered }) {
-  if (last7Days.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-32 text-slate-300">
-        <span className="text-4xl mb-2">📊</span>
-        <p className="text-sm font-medium">Complete your first assessment to see your journey.</p>
-      </div>
-    );
-  }
-
-  const labels = last7Days.map(r => formatDateLabel(r.date));
-  const scores = last7Days.map(r => r.score);
-
-  // Flag anomaly points with a different color
-  const pointColors = scores.map((s, i) => {
-    if (i === scores.length - 1 && isTriggered) return '#f59e0b'; // amber for anomaly
-    return '#818cf8'; // indigo default
-  });
-
-  const data = {
-    labels,
-    datasets: [{
-      data: scores,
-      fill: true,
-      tension: 0.4,
-      borderColor: '#818cf8',
-      borderWidth: 2.5,
-      backgroundColor: (ctx) => {
-        const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 160);
-        gradient.addColorStop(0, 'rgba(129, 140, 248, 0.25)');
-        gradient.addColorStop(1, 'rgba(129, 140, 248, 0)');
-        return gradient;
-      },
-      pointBackgroundColor: pointColors,
-      pointBorderColor: '#fff',
-      pointBorderWidth: 2,
-      pointRadius: 5,
-      pointHoverRadius: 7,
-    }],
-  };
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        grid: { display: false },
-        ticks: { color: '#94a3b8', font: { family: 'inherit', size: 10, weight: '600' } },
-      },
-      y: {
-        min: 0,
-        max: 100,
-        grid: { color: 'rgba(148, 163, 184, 0.1)' },
-        ticks: {
-          color: '#94a3b8',
-          font: { family: 'inherit', size: 10 },
-          callback: (v) => `${v}`,
-          stepSize: 25,
-        },
-      },
-    },
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#fff',
-        titleColor: '#334155',
-        bodyColor: '#64748b',
-        borderColor: '#e2e8f0',
-        borderWidth: 1,
-        padding: 10,
-        cornerRadius: 12,
-        callbacks: {
-          label: (ctx) => ` Load: ${ctx.parsed.y}`,
-        },
-      },
-    },
-  };
-
-  return (
-    <div style={{ height: '160px' }}>
-      <Line data={data} options={options} />
-    </div>
-  );
-}
-
-function LongitudinalSparkline({ last30Days }) {
-  if (last30Days.length < 4) return null;
-
-  const max = Math.max(...last30Days.map(r => r.score));
-  const today = new Date().toISOString().split('T')[0];
-
-  return (
-    <div className="mt-4">
-      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-        30-Day Pattern
-      </p>
-      <div className="flex items-end gap-[3px] h-8">
-        {last30Days.map((r) => (
-          <div
-            key={r.date}
-            title={`${formatDateLabel(r.date)}: ${r.score}`}
-            className="flex-1 rounded-t-sm transition-all duration-300"
-            style={{
-              height: `${Math.max(8, (r.score / Math.max(max, 1)) * 100)}%`,
-              background: r.date === today
-                ? 'linear-gradient(to top, #f59e0b, #fcd34d)'
-                : `hsl(${220 + (r.score / 100) * 40}, 60%, ${75 - (r.score / 100) * 20}%)`,
-            }}
-          />
-        ))}
-      </div>
-      <div className="flex justify-between text-[10px] text-slate-300 font-medium mt-1">
-        <span>30 days ago</span>
-        <span className="text-amber-400 font-bold">Today</span>
-      </div>
-    </div>
-  );
-}
-
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 export default function Dashboard({ assessmentScores = [], onNavigate }) {
@@ -302,15 +183,15 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
     isLoading,
   } = useEmotionalBaseline();
 
-  const [hasSynced, setHasSynced]     = useState(false);
-  const [syncStatus, setSyncStatus]   = useState(null); // 'ok' | 'fail'
-  const syncCalledRef                 = useRef(false);
+  const [hasSynced, setHasSynced] = useState(false);
+  const [syncStatus, setSyncStatus] = useState(null); // 'ok' | 'fail'
+  const syncCalledRef = useRef(false);
 
   // ── Compute latest normalized score ───────────────────────────────────────
   const latestScore = assessmentScores.length > 0
     ? Math.min(100, Math.round(
-        (assessmentScores.reduce((a, b) => a + b, 0) / 40) * 100
-      ))
+      (assessmentScores.reduce((a, b) => a + b, 0) / 40) * 100
+    ))
     : (last7Days.length > 0 ? last7Days[last7Days.length - 1].score : 50);
 
   // ── Telemetry status indicator ─────────────────────────────────────────────
@@ -325,8 +206,8 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
 
   // ── ML Recommendation ──────────────────────────────────────────────────────
   const recommendedToolId = getRecommendedTool(isTriggered, trendDirection, latestScore);
-  const recommendedTool   = TOOLS.find(t => t.id === recommendedToolId);
-  const trendCfg          = TREND_CONFIG[trendDirection] || TREND_CONFIG.stable;
+  const recommendedTool = TOOLS.find(t => t.id === recommendedToolId);
+  const trendCfg = TREND_CONFIG[trendDirection] || TREND_CONFIG.stable;
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-6 space-y-6 font-sans">
@@ -341,8 +222,8 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
         <div className="bg-white/70 backdrop-blur-xl border border-white/60 rounded-3xl p-6 shadow-lg shadow-indigo-500/5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-base font-black text-slate-700">Your Journey</h2>
-              <p className="text-xs text-slate-400 font-medium">7-day nervous system load</p>
+              <h2 className="text-base font-black text-slate-700">Your Journey & Insights</h2>
+              <p className="text-xs text-slate-400 font-medium">View your full analytics history</p>
             </div>
             {/* Trend direction badge */}
             <span className={`text-xs font-black px-3 py-1 rounded-full border ${trendCfg.bg} ${trendCfg.border} ${trendCfg.color}`}>
@@ -350,11 +231,17 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
             </span>
           </div>
 
-          <JourneyChart last7Days={last7Days} isTriggered={isTriggered} />
-          <LongitudinalSparkline last30Days={last30Days} />
+          <div className="flex-grow flex items-center justify-center my-4">
+            <button 
+              onClick={() => onNavigate('analytics')}
+              className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-6 py-3 rounded-full font-bold text-sm flex items-center gap-2 transition-all border border-indigo-100 shadow-sm"
+            >
+              <span>📊</span> View Detailed Insights
+            </button>
+          </div>
 
           {/* Trend interpretation */}
-          <p className="text-xs text-slate-400 font-medium mt-3 italic">
+          <p className="text-xs text-slate-400 font-medium mt-auto italic text-center">
             {trendCfg.desc}
           </p>
         </div>
@@ -396,8 +283,8 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
                       background: latestScore > 70
                         ? 'linear-gradient(to right, #f59e0b, #ef4444)'
                         : latestScore > 45
-                        ? 'linear-gradient(to right, #818cf8, #a78bfa)'
-                        : 'linear-gradient(to right, #34d399, #6ee7b7)',
+                          ? 'linear-gradient(to right, #818cf8, #a78bfa)'
+                          : 'linear-gradient(to right, #34d399, #6ee7b7)',
                     }}
                   />
                 </div>
@@ -406,8 +293,8 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
                   {latestScore > 70
                     ? 'Your system is carrying significant load right now.'
                     : latestScore > 45
-                    ? 'Moderate activation — manageable with the right tool.'
-                    : 'Your system is in a relatively regulated state.'}
+                      ? 'Moderate activation — manageable with the right tool.'
+                      : 'Your system is in a relatively regulated state.'}
                 </p>
               </div>
             )}
@@ -465,6 +352,62 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
         </button>
       </div>
 
+      {/* ── Empowerment & Education ───────────────────────────────────── */}
+      <div className="mb-10">
+        <h2 className="text-sm font-black text-slate-500 uppercase tracking-wider mb-3">
+          Education & Empowerment
+        </h2>
+        <button
+          onClick={() => onNavigate('legal')}
+          className="w-full text-left bg-gradient-to-r from-blue-600 to-indigo-700 p-6 rounded-3xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex items-center justify-between"
+        >
+          <div className="flex items-center gap-4">
+            <span className="text-4xl">⚖️</span>
+            <div>
+              <p className="text-white font-black text-lg">Know Your Rights (India)</p>
+              <p className="text-blue-100 text-xs font-medium mt-1">Interactive legal scenarios: Know the law, and don't misuse it.</p>
+            </div>
+          </div>
+          <span className="text-white/60 group-hover:text-white text-2xl font-black transition-all group-hover:translate-x-1">→</span>
+        </button>
+      </div>
+
+      {/* ── Advanced Features ───────────────────────────────────────── */}
+      <div className="mb-10">
+        <h2 className="text-sm font-black text-slate-500 uppercase tracking-wider mb-3">
+          Advanced Healing
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <button
+            onClick={() => onNavigate('bodymap')}
+            className="w-full text-left bg-gradient-to-r from-indigo-500 to-purple-600 p-6 rounded-3xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex items-center justify-between"
+          >
+            <div className="flex items-center gap-4">
+              <span className="text-4xl">🧍</span>
+              <div>
+                <p className="text-white font-black text-lg">Interactive Body Map</p>
+                <p className="text-indigo-100 text-xs font-medium mt-1">Tap where you feel it.</p>
+              </div>
+            </div>
+            <span className="text-white/60 group-hover:text-white text-2xl font-black transition-all group-hover:translate-x-1">→</span>
+          </button>
+
+          <button
+            onClick={() => onNavigate('tracker')}
+            className="w-full text-left bg-gradient-to-r from-emerald-500 to-teal-600 p-6 rounded-3xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex items-center justify-between"
+          >
+            <div className="flex items-center gap-4">
+              <span className="text-4xl">📈</span>
+              <div>
+                <p className="text-white font-black text-lg">Resilience Tracker</p>
+                <p className="text-emerald-100 text-xs font-medium mt-1">Track triggers and relief secretly.</p>
+              </div>
+            </div>
+            <span className="text-white/60 group-hover:text-white text-2xl font-black transition-all group-hover:translate-x-1">→</span>
+          </button>
+        </div>
+      </div>
+
       {/* ── All Tools ─────────────────────────────────────────────────── */}
       <div>
         <h2 className="text-sm font-black text-slate-500 uppercase tracking-wider mb-3">
@@ -496,6 +439,25 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
             );
           })}
         </div>
+      </div>
+
+      {/* ── Support & Helplines ───────────────────────────────────────── */}
+      <div className="mt-8">
+        <button
+          onClick={() => onNavigate('support')}
+          className="w-full text-left bg-white/70 backdrop-blur-xl border border-rose-100 p-6 rounded-3xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex items-center justify-between"
+        >
+          <div className="flex items-center gap-4">
+            <span className="text-4xl">🚨</span>
+            <div>
+              <p className="text-slate-800 font-black text-lg">Crisis Support & Helplines</p>
+              <p className="text-slate-500 text-xs font-medium">Access verified professional resources in India (24/7)</p>
+            </div>
+          </div>
+          <span className="text-slate-400 group-hover:text-rose-500 text-2xl font-black transition-all group-hover:translate-x-1">
+            →
+          </span>
+        </button>
       </div>
 
     </div>

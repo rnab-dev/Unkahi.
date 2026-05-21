@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import Assessment from './Assessment';
 import Dashboard from './Dashboard';
+import SupportDirectory from './SupportDirectory';
+import BodyMap from './BodyMap';
+import ResilienceTracker from './ResilienceTracker';
+import LegalRights from './LegalRights';
+import AnalyticsDashboard from './AnalyticsDashboard';
+import UnifiedDataPage from './UnifiedDataPage';
 import { BreathingRoom, GroundingMatrix, LetGoBox, BilateralStimulation } from './HealingTools';
 import SomaticHealer from './SomaticHealer';
 import KidsMode from './KidsMode';
@@ -9,14 +15,26 @@ import NightWatch from './NightWatch';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
-  const [currentView, setCurrentView]       = useState('welcome');
+  const [currentView, setCurrentView] = useState('welcome');
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [assessmentData, setAssessmentData] = useState({
+    basicScores: [],
+    deepDiveScores: [],
+    combinedScores: [],
+    suggestedTool: null,
+    basicComplete: false,
+    deepDiveComplete: false,
+  });
+  // Keep legacy assessmentScores for Dashboard compatibility
   const [assessmentScores, setAssessmentScores] = useState([]);
-  const [sosActive, setSosActive]           = useState(false);
+  const [sosActive, setSosActive] = useState(false);
 
   // Check if it's currently between 1 AM and 5 AM
   const currentHour = new Date().getHours();
   const isNightMode = currentHour >= 1 && currentHour < 5;
+  // NightWatch shows as an overlay — user can dismiss it to reach the landing page
+  const [nightWatchDismissed, setNightWatchDismissed] = useState(false);
+  const showNightWatch = isNightMode && !nightWatchDismissed && currentView === 'welcome';
 
   const handleNavigate = (view) => {
     setIsTransitioning(true);
@@ -29,7 +47,7 @@ function App() {
 
   const renderToolsConfig = () => (
     <div className={`mx-auto max-w-2xl w-full p-8 md:p-12 text-center relative bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-indigo-500/10 rounded-[2.5rem] transition-all duration-500 ease-out ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-      <button 
+      <button
         onClick={() => handleNavigate('welcome')}
         className="absolute top-6 left-6 text-slate-400 hover:text-slate-600 font-bold uppercase tracking-widest text-xs transition-colors"
       >
@@ -66,31 +84,74 @@ function App() {
 
   const viewMap = {
     welcome: () => (
-      isNightMode ? (
-        <NightWatch onNavigate={handleNavigate} isTransitioning={isTransitioning} />
-      ) : (
-        <LandingPage onNavigate={handleNavigate} isTransitioning={isTransitioning} />
-      )
+      <LandingPage onNavigate={handleNavigate} isTransitioning={isTransitioning} />
     ),
     assessment: () => (
       <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
         <Assessment
-          onComplete={(scores, recommendedTool) => {
-            if (scores) setAssessmentScores(scores);
+          onNavigate={handleNavigate}
+          onComplete={(scores, recommendedTool, type) => {
+            if (scores) {
+              setAssessmentScores(scores);
+              if (type === 'deepdive') {
+                // Deep dive just completed — scores are already combined
+                setAssessmentData(prev => ({
+                  ...prev,
+                  combinedScores: scores,
+                  deepDiveScores: scores.map((s, i) => s - (prev.basicScores[i] || 0)),
+                  deepDiveComplete: true,
+                  suggestedTool: recommendedTool ?? prev.suggestedTool,
+                }));
+              } else if (type === 'basic') {
+                // Basic assessment just completed
+                setAssessmentData(prev => ({
+                  ...prev,
+                  basicScores: scores,
+                  basicComplete: true,
+                  suggestedTool: recommendedTool ?? prev.suggestedTool,
+                }));
+              } else {
+                // Legacy path (no type): detect by whether basic is already done
+                if (assessmentData.basicComplete) {
+                  setAssessmentData(prev => ({
+                    ...prev,
+                    combinedScores: scores,
+                    deepDiveScores: scores.map((s, i) => s - (prev.basicScores[i] || 0)),
+                    deepDiveComplete: true,
+                    suggestedTool: recommendedTool ?? prev.suggestedTool,
+                  }));
+                } else {
+                  setAssessmentData(prev => ({
+                    ...prev,
+                    basicScores: scores,
+                    basicComplete: true,
+                    suggestedTool: recommendedTool ?? prev.suggestedTool,
+                  }));
+                }
+              }
+            }
+            // Navigate to the recommended tool if provided
             if (recommendedTool) {
               handleNavigate(recommendedTool);
-            } else {
-              handleNavigate('dashboard');
             }
           }}
         />
       </div>
     ),
+    // 'dashboard' is an alias for mydata (unified data page)
     dashboard: () => (
       <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-        <Dashboard
-          assessmentScores={assessmentScores}
+        <UnifiedDataPage
           onNavigate={handleNavigate}
+          assessmentData={assessmentData}
+        />
+      </div>
+    ),
+    mydata: () => (
+      <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+        <UnifiedDataPage
+          onNavigate={handleNavigate}
+          assessmentData={assessmentData}
         />
       </div>
     ),
@@ -98,61 +159,84 @@ function App() {
     tools: () => renderToolsConfig(),
     breathe: () => (
       <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-        <BreathingRoom onBack={() => handleNavigate('dashboard')} />
+        <BreathingRoom onBack={() => handleNavigate('mydata')} />
       </div>
     ),
     ground: () => (
       <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-        <GroundingMatrix onBack={() => handleNavigate('dashboard')} />
+        <GroundingMatrix onBack={() => handleNavigate('mydata')} />
       </div>
     ),
     letgo: () => (
       <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-        <LetGoBox onBack={() => handleNavigate('dashboard')} />
+        <LetGoBox onBack={() => handleNavigate('mydata')} />
       </div>
     ),
     emdr: () => (
       <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-        <BilateralStimulation onBack={() => handleNavigate('dashboard')} />
+        <BilateralStimulation onBack={() => handleNavigate('mydata')} />
       </div>
     ),
     somatic: () => (
       <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-        <SomaticHealer onBack={() => handleNavigate('dashboard')} />
+        <SomaticHealer onBack={() => handleNavigate('mydata')} />
       </div>
     ),
     kids: () => (
       <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
         <KidsMode onBack={() => handleNavigate('welcome')} />
       </div>
+    ),
+    support: () => (
+      <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+        <SupportDirectory onBack={() => handleNavigate('dashboard')} />
+      </div>
+    ),
+    bodymap: () => (
+      <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+        <BodyMap onBack={() => handleNavigate('dashboard')} onNavigateTool={handleNavigate} />
+      </div>
+    ),
+    tracker: () => (
+      <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+        <ResilienceTracker onBack={() => handleNavigate('dashboard')} />
+      </div>
+    ),
+    legal: () => (
+      <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+        <LegalRights onBack={() => handleNavigate('dashboard')} />
+      </div>
+    ),
+    analytics: () => (
+      <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+        <AnalyticsDashboard onBack={() => handleNavigate('mydata')} />
+      </div>
     )
   };
 
   return (
     <div className={`min-h-screen relative overflow-x-hidden flex flex-col transition-colors duration-1000 ${
-        isNightMode && currentView === 'welcome' 
-          ? 'bg-slate-950'
-          : currentView === 'assessment' 
-          ? 'bg-gradient-to-br from-cyan-100 via-purple-200 to-pink-100' 
+        currentView === 'assessment'
+          ? 'bg-gradient-to-br from-cyan-100 via-purple-200 to-pink-100'
           : 'bg-gradient-to-br from-cyan-50 via-purple-100 to-pink-50'
       }`}
     >
       {/* ── SOS Override Overlay ── */}
       <AnimatePresence>
         {sosActive && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center p-6 text-center"
           >
-            <button 
+            <button
               onClick={() => setSosActive(false)}
               className="absolute top-8 left-8 text-slate-500 hover:text-slate-300 font-bold tracking-widest uppercase text-sm"
             >
               ← Close
             </button>
-            <motion.div 
+            <motion.div
               animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
               className="w-48 h-48 rounded-full bg-indigo-500/20 blur-xl absolute"
@@ -161,12 +245,46 @@ function App() {
             <p className="text-xl text-slate-400 font-medium max-w-md relative z-10 mb-12">
               You are safe in this exact moment. Nothing is required of you right now.
             </p>
-            <div className="grid grid-cols-2 gap-4 w-full max-w-sm relative z-10">
+            <div className="grid grid-cols-2 gap-4 w-full max-w-sm relative z-10 mb-8">
               <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300 font-bold">5 Things you see</div>
               <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300 font-bold">4 Things you feel</div>
               <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300 font-bold">3 Things you hear</div>
               <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300 font-bold">2 Things you smell</div>
             </div>
+
+            <a
+              href="tel:18005990019"
+              className="relative z-10 bg-rose-600 hover:bg-rose-500 text-white font-black py-4 px-8 rounded-full shadow-[0_0_20px_rgba(225,29,72,0.4)] hover:shadow-[0_0_30px_rgba(225,29,72,0.6)] transition-all flex items-center gap-3 w-full max-w-sm justify-center"
+            >
+              <span className="text-xl animate-pulse">📞</span> Call KIRAN Helpline (1800-599-0019)
+            </a>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── NightWatch Overlay (1–5 AM) ── */}
+      <AnimatePresence>
+        {showNightWatch && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[95] bg-slate-950/95 backdrop-blur-sm"
+          >
+            <button
+              onClick={() => setNightWatchDismissed(true)}
+              className="absolute top-6 right-6 text-slate-500 hover:text-slate-300 font-bold tracking-widest uppercase text-xs border border-slate-700 px-3 py-2 rounded-full transition-colors"
+            >
+              Skip →
+            </button>
+            <NightWatch
+              onNavigate={(view) => {
+                setNightWatchDismissed(true);
+                handleNavigate(view);
+              }}
+              onDismiss={() => setNightWatchDismissed(true)}
+              isTransitioning={isTransitioning}
+            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -189,10 +307,10 @@ function App() {
           <QuickExitButton />
         </div>
       )}
-      
-      <div className="w-full relative z-10 flex flex-col items-center justify-center flex-grow px-4 md:px-0">
+
+      <main className="w-full relative z-10 flex flex-col items-center justify-center flex-grow px-4 md:px-0">
         {viewMap[currentView]()}
-      </div>
+      </main>
 
       <footer className="mt-auto py-6 text-center text-slate-500/80 font-medium text-xs tracking-widest z-10 relative flex flex-col items-center gap-2">
         <span className="uppercase">An Arnab Initiative</span>
@@ -205,7 +323,7 @@ function App() {
 }
 
 const QuickExitButton = () => (
-  <button 
+  <button
     onClick={() => window.location.replace('https://www.google.com')}
     className="bg-red-500/90 backdrop-blur-sm border border-red-400 text-white font-bold py-2 px-6 rounded-full shadow-sm hover:shadow-md hover:bg-red-600 transition-all text-xs uppercase tracking-wide"
     title="Quick safe exit to Google"
