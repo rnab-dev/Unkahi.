@@ -64,11 +64,11 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
         <nav className="w-full flex flex-col md:flex-row items-center justify-between mb-16 md:mb-24 mt-8 px-4 md:px-8 gap-6 md:gap-0">
           <div className="flex flex-col text-center md:text-left relative">
             <h1 className="flex items-center justify-center md:justify-start gap-2 text-black mb-1">
-              <span className="text-5xl md:text-6xl tracking-tight leading-none" style={{ fontFamily: '"London", serif', fontWeight: 900 }}>UN</span>
-              <div className="h-10 md:h-12 w-[3px] bg-black mx-1" />
-              <span className="text-5xl md:text-6xl tracking-tighter leading-none" style={{ fontFamily: '"Inknut Antiqua", serif', fontWeight: 800 }}>कही</span>
+              <span className="text-4xl md:text-5xl tracking-tight leading-none" style={{ fontFamily: '"London", serif', fontWeight: 900 }}>UN</span>
+              <div className="h-8 md:h-10 w-[3px] bg-black mx-1" />
+              <span className="text-4xl md:text-5xl tracking-tighter leading-none" style={{ fontFamily: '"Inknut Antiqua", serif', fontWeight: 800 }}>कही</span>
             </h1>
-            <p className="text-[0.55rem] md:text-xs font-bold text-slate-500 uppercase tracking-[0.25em] mt-1">UNDERSTOOD WITHOUT A SINGLE WORD</p>
+            <p className="text-[0.55rem] md:text-xs font-bold text-slate-500 uppercase tracking-[0.25em] mt-4">UNDERSTOOD WITHOUT A SINGLE WORD</p>
           </div>
           <div className="flex items-center gap-3 md:gap-4 flex-wrap justify-center">
             <button

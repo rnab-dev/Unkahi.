@@ -325,29 +325,29 @@ export default function Assessment({ onComplete, onNavigate }) {
           <h4 className="text-2xl font-extrabold text-slate-700 mb-4">Resonance Check</h4>
           <p className="text-slate-500 mb-8 max-w-lg mx-auto font-medium text-lg">Psychology is complex, and you know yourself best. Does this emotional footprint resonate with how you are feeling?</p>
           <div className="flex flex-col sm:flex-row justify-center gap-6 mb-10">
-            <button onClick={() => handleResonance('yes')} className={`rounded-full px-8 py-4 font-extrabold text-lg transition-all duration-300 w-full sm:w-auto shadow-sm ${resonance === 'yes' ? 'bg-[#A3BE8C] text-white shadow-lg -translate-y-1' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>👍 Yes, accurate</button>
-            <button onClick={() => handleResonance('no')} className={`rounded-full px-8 py-4 font-extrabold text-lg transition-all duration-300 w-full sm:w-auto shadow-sm ${resonance === 'no' ? 'bg-[#B48EAD] text-white shadow-lg -translate-y-1' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>👎 Not quite right</button>
+            <button onClick={() => handleResonance('yes')} className={`rounded-full px-6 py-3 md:px-8 md:py-4 font-extrabold text-base md:text-lg transition-all duration-300 w-full sm:w-auto shadow-sm ${resonance === 'yes' ? 'bg-[#A3BE8C] text-white shadow-lg -translate-y-1' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>👍 Yes, accurate</button>
+            <button onClick={() => handleResonance('no')} className={`rounded-full px-6 py-3 md:px-8 md:py-4 font-extrabold text-base md:text-lg transition-all duration-300 w-full sm:w-auto shadow-sm ${resonance === 'no' ? 'bg-[#B48EAD] text-white shadow-lg -translate-y-1' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>👎 Not quite right</button>
           </div>
           <div className={`overflow-hidden transition-all duration-500 ${resonance ? 'max-h-20 opacity-100 mb-10' : 'max-h-0 opacity-0'}`}><p className="text-[#D08770] font-extrabold text-xl">Thank you for tuning in to yourself.</p></div>
           
-          <div className="bg-teal-50 border border-teal-200 rounded-2xl p-6 mb-8 max-w-sm mx-auto">
-            <p className="text-teal-700 font-bold text-sm uppercase tracking-wider mb-2">Recommended for You Now</p>
+          <div className="bg-teal-50 border border-teal-200 rounded-2xl p-4 md:p-6 mb-8 max-w-sm mx-auto w-full">
+            <p className="text-teal-700 font-bold text-xs md:text-sm uppercase tracking-wider mb-2">Recommended for You Now</p>
             <div className="flex items-center justify-center gap-3">
-              <span className="text-4xl">{suggestedTool.emoji}</span>
-              <span className="text-2xl font-black text-teal-900">{suggestedTool.name}</span>
+              <span className="text-3xl md:text-4xl">{suggestedTool.emoji}</span>
+              <span className="text-xl md:text-2xl font-black text-teal-900">{suggestedTool.name}</span>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center flex-wrap">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center flex-wrap w-full">
             <button
               onClick={() => { onComplete && onComplete(scores, suggestedTool.id); if (onNavigate) onNavigate(suggestedTool.id); }}
-              className="bg-teal-700 text-white px-10 py-4 font-extrabold rounded-full text-lg shadow-md hover:shadow-[0_0_15px_rgba(13,148,136,0.6)] hover:-translate-y-1 transition-all"
+              className="bg-teal-700 text-white w-full sm:w-auto px-6 py-3 md:px-10 md:py-4 font-extrabold rounded-full text-base md:text-lg shadow-md hover:shadow-[0_0_15px_rgba(13,148,136,0.6)] hover:-translate-y-1 transition-all"
             >
               Begin {suggestedTool.name}
             </button>
             <button
               onClick={() => setDeepDiveState('warning')}
-              className="bg-white border-2 border-purple-200 text-purple-700 px-8 py-4 font-extrabold rounded-full text-sm hover:bg-purple-50 hover:-translate-y-1 transition-all shadow-sm"
+              className="bg-white border-2 border-purple-200 text-purple-700 w-full sm:w-auto px-6 py-3 md:px-8 md:py-4 font-extrabold rounded-full text-xs md:text-sm hover:bg-purple-50 hover:-translate-y-1 transition-all shadow-sm"
             >
               🔬 Go Deeper — I want more clarity
             </button>
