@@ -137,9 +137,18 @@ export default function Assessment({ onComplete, onNavigate }) {
         // ── Step 4: Also keep the existing surveys table write (resonance, etc.) 
         try {
           const geo = await getGeoIPDetails();
-          const { data, error } = await supabase
+          // Fallback UUID generator for testing on mobile over HTTP (non-secure context)
+          const newSurveyId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+            ? crypto.randomUUID() 
+            : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                const r = Math.random() * 16 | 0;
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+              });
+          
+          const { error } = await supabase
             .from('surveys')
             .insert([{ 
+              id: newSurveyId,
               survey_data: { 
                 score_normalized: normalizedScore,
                 dimension_count: finalScores.length,
@@ -150,14 +159,13 @@ export default function Assessment({ onComplete, onNavigate }) {
               country: geo.country,
               city: geo.city,
               region: geo.region
-            }])
-            .select();
+            }]);
             
           if (error) {
             console.error('Supabase Error saving survey:', error.message);
-          } else if (data && data.length > 0) {
+          } else {
             console.log('Survey record saved to Supabase with geolocation.');
-            setSurveyId(data[0].id);
+            setSurveyId(newSurveyId);
           }
         } catch (err) {
           console.error('Error saving survey record:', err);
