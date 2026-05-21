@@ -44,7 +44,7 @@ const FlipCard = ({ scenario }) => {
   const [isFlipped, setIsFlipped] = useState(false);
 
   return (
-    <div className="relative w-full h-[350px] md:h-[400px]" style={{ perspective: 1000 }}>
+    <div className="relative w-full h-[460px] sm:h-[420px] md:h-[400px]" style={{ perspective: 1000 }}>
       <motion.div
         className="w-full h-full relative"
         initial={false}
@@ -70,14 +70,29 @@ const FlipCard = ({ scenario }) => {
 
         {/* Back of Card */}
         <div 
-          className="absolute w-full h-full bg-indigo-600 rounded-[2rem] shadow-xl p-6 md:p-8 flex flex-col justify-center cursor-pointer text-left overflow-y-auto"
-          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-          onClick={() => setIsFlipped(false)}
+          className="absolute w-full h-full bg-indigo-600 rounded-[2rem] shadow-xl p-6 md:p-8 flex flex-col justify-start text-left overflow-y-auto custom-card-scroll"
+          style={{ 
+            backfaceVisibility: 'hidden', 
+            transform: 'rotateY(180deg)',
+            WebkitOverflowScrolling: 'touch'
+          }}
         >
-          <div className="inline-block bg-white/20 text-white text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3 w-fit">
-            {scenario.law}
+          <div className="flex flex-row items-center justify-between gap-2 mb-4 w-full relative z-20 flex-wrap sm:flex-nowrap">
+            <div className="inline-block bg-white/20 text-white text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full w-fit">
+              {scenario.law}
+            </div>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsFlipped(false);
+              }}
+              className="text-white/80 hover:text-white text-xs font-bold uppercase tracking-widest transition-all bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full flex items-center gap-1 cursor-pointer"
+            >
+              ← Scenario
+            </button>
           </div>
-          <p className="text-white text-sm md:text-base font-medium mb-4 leading-relaxed">
+
+          <p className="text-white text-sm md:text-base font-medium mb-4 leading-relaxed pr-1">
             <strong className="block text-indigo-200 mb-1">The Reality:</strong>
             {scenario.explanation}
           </p>

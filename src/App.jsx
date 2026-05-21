@@ -355,7 +355,7 @@ function App() {
         </div>
       )}
 
-      <main className="w-full relative z-10 flex flex-col items-center justify-center flex-grow px-4 md:px-0">
+      <main className="w-full relative z-10 flex flex-col items-center justify-center flex-grow px-4 md:px-0 pb-24 md:pb-12">
         {viewMap[currentView]()}
       </main>
 
