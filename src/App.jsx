@@ -12,6 +12,10 @@ import SomaticHealer from './SomaticHealer';
 import KidsMode from './KidsMode';
 import LandingPage from './LandingPage';
 import NightWatch from './NightWatch';
+import SafetyPlan from './SafetyPlan';
+import MoodDiary from './MoodDiary';
+import PsychoEducation from './PsychoEducation';
+import GratitudeVault from './GratitudeVault';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
@@ -211,14 +215,33 @@ function App() {
       <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
         <AnalyticsDashboard onBack={() => handleNavigate('mydata')} />
       </div>
+    ),
+    safetyplan: () => (
+      <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+        <SafetyPlan onBack={() => handleNavigate('welcome')} />
+      </div>
+    ),
+    mooddiary: () => (
+      <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+        <MoodDiary onBack={() => handleNavigate('dashboard')} onNavigate={handleNavigate} />
+      </div>
+    ),
+    psychoed: () => (
+      <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+        <PsychoEducation onBack={() => handleNavigate('dashboard')} />
+      </div>
+    ),
+    vault: () => (
+      <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+        <GratitudeVault onBack={() => handleNavigate('dashboard')} />
+      </div>
     )
   };
 
   return (
-    <div className={`min-h-screen relative overflow-x-hidden flex flex-col transition-colors duration-1000 ${
-        currentView === 'assessment'
-          ? 'bg-gradient-to-br from-cyan-100 via-purple-200 to-pink-100'
-          : 'bg-gradient-to-br from-cyan-50 via-purple-100 to-pink-50'
+    <div className={`min-h-screen relative overflow-x-hidden flex flex-col transition-colors duration-1000 ${currentView === 'assessment'
+        ? 'bg-gradient-to-br from-cyan-100 via-purple-200 to-pink-100'
+        : 'bg-gradient-to-br from-cyan-50 via-purple-100 to-pink-50'
       }`}
     >
       {/* ── SOS Override Overlay ── */}
@@ -241,23 +264,43 @@ function App() {
               transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
               className="w-48 h-48 rounded-full bg-indigo-500/20 blur-xl absolute"
             />
-            <h2 className="text-3xl md:text-5xl font-black text-slate-200 mb-6 relative z-10">Breathe with the circle.</h2>
-            <p className="text-xl text-slate-400 font-medium max-w-md relative z-10 mb-12">
-              You are safe in this exact moment. Nothing is required of you right now.
+            <h2 className="text-3xl md:text-5xl font-black text-slate-200 mb-6 relative z-10">TIPP Emergency Protocol</h2>
+            <p className="text-lg text-slate-400 font-medium max-w-md relative z-10 mb-8">
+              Your nervous system is overwhelmed. Do one of these right now to reset.
             </p>
-            <div className="grid grid-cols-2 gap-4 w-full max-w-sm relative z-10 mb-8">
-              <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300 font-bold">5 Things you see</div>
-              <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300 font-bold">4 Things you feel</div>
-              <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300 font-bold">3 Things you hear</div>
-              <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300 font-bold">2 Things you smell</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg relative z-10 mb-8 text-left">
+              <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300">
+                <span className="text-blue-400 font-bold block mb-1">❄️ Temperature</span>
+                <span className="text-sm">Hold an ice cube or splash cold water on your face.</span>
+              </div>
+              <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300">
+                <span className="text-rose-400 font-bold block mb-1">🏃‍♂️ Intense Exercise</span>
+                <span className="text-sm">Do 20 jumping jacks or sprint in place for 30 seconds.</span>
+              </div>
+              <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300">
+                <span className="text-emerald-400 font-bold block mb-1">🫁 Paced Breathing</span>
+                <span className="text-sm">Breathe in for 4, hold for 7, out for 8.</span>
+              </div>
+              <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300">
+                <span className="text-indigo-400 font-bold block mb-1">🧘 Paired Relaxation</span>
+                <span className="text-sm">Tense your hands and feet tight, then release fully.</span>
+              </div>
             </div>
 
-            <a
-              href="tel:18005990019"
-              className="relative z-10 bg-rose-600 hover:bg-rose-500 text-white font-black py-4 px-8 rounded-full shadow-[0_0_20px_rgba(225,29,72,0.4)] hover:shadow-[0_0_30px_rgba(225,29,72,0.6)] transition-all flex items-center gap-3 w-full max-w-sm justify-center"
-            >
-              <span className="text-xl animate-pulse">📞</span> Call KIRAN Helpline (1800-599-0019)
-            </a>
+            <div className="flex flex-col sm:flex-row gap-4 relative z-10 w-full max-w-lg justify-center">
+              <a
+                href="tel:18005990019"
+                className="bg-rose-600 hover:bg-rose-500 text-white font-black py-4 px-6 rounded-full shadow-[0_0_20px_rgba(225,29,72,0.4)] transition-all flex items-center justify-center gap-2"
+              >
+                <span className="text-xl animate-pulse">📞</span> KIRAN (1800-599-0019)
+              </a>
+              <button
+                onClick={() => { setSosActive(false); handleNavigate('safetyplan'); }}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 font-black py-4 px-6 rounded-full transition-all flex items-center justify-center gap-2"
+              >
+                <span className="text-xl">🛡️</span> View My Safety Plan
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -301,8 +344,12 @@ function App() {
       {currentView !== 'welcome' && (
         <div className="w-full flex flex-row items-center justify-between pt-6 px-6 md:px-10 mb-6 md:mb-8 max-w-6xl mx-auto z-10 transition-all duration-500 opacity-100">
           <div className="flex flex-col cursor-pointer" onClick={() => handleNavigate('welcome')}>
-            <h1 className="text-xl md:text-2xl font-extrabold text-[#475569] tracking-widest uppercase">UNKAHI</h1>
-            <p className="text-[0.55rem] md:text-[0.65rem] font-bold text-slate-500 uppercase tracking-widest mt-0.5">Interactive Psychological Safety</p>
+            <h1 className="flex items-center gap-1.5 text-black mb-1">
+              <span className="text-2xl md:text-3xl tracking-tight leading-none" style={{ fontFamily: '"London", serif', fontWeight: 900 }}>UN</span>
+              <div className="h-6 md:h-7 w-[2.5px] bg-black" />
+              <span className="text-2xl md:text-3xl tracking-tighter leading-none" style={{ fontFamily: '"Inknut Antiqua", serif', fontWeight: 800 }}>कही</span>
+            </h1>
+            <p className="text-[0.45rem] md:text-[0.55rem] font-bold text-slate-500 uppercase tracking-widest mt-0.5">UNDERSTOOD WITHOUT A SINGLE WORD</p>
           </div>
           <QuickExitButton />
         </div>

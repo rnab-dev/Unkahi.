@@ -113,6 +113,10 @@ const TOOLS = [
   { id: 'letgo', name: 'Let Go Box', emoji: '💨', color: 'from-purple-400 to-violet-400', desc: 'Write, process and release.' },
   { id: 'emdr', name: 'Bilateral Audio', emoji: '🎧', color: 'from-indigo-500 to-blue-500', desc: 'Soothe the amygdala with EMDR audio.' },
   { id: 'somatic', name: 'Somatic Healer', emoji: '🧬', color: 'from-emerald-500 to-teal-500', desc: 'Polyvagal resets & muscle flushing.' },
+  { id: 'mooddiary', name: 'Mood Diary', emoji: '📝', color: 'from-amber-400 to-orange-400', desc: 'Notice feelings without judgment.' },
+  { id: 'psychoed', name: 'Nervous System Ed', emoji: '🧠', color: 'from-sky-400 to-blue-500', desc: 'Understand why your body reacts.' },
+  { id: 'vault', name: 'Safe Vault', emoji: '✨', color: 'from-yellow-400 to-amber-500', desc: 'A safe place for good moments.' },
+  { id: 'safetyplan', name: 'Safety Plan', emoji: '🛡️', color: 'from-slate-600 to-slate-800', desc: 'Your personal crisis support.' },
 ];
 
 const TREND_CONFIG = {
