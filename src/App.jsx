@@ -366,13 +366,15 @@ function App() {
       </main>
 
       <footer className="mt-auto py-6 text-center text-slate-500/80 font-medium text-xs tracking-widest z-10 relative flex flex-col items-center gap-2">
-        <span className="uppercase">An Arnab Initiative</span>
-        <button
-          onClick={() => handleNavigate('admin')}
-          className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors mt-1 focus:outline-none"
-        >
-          🛡️ Admin Panel
-        </button>
+        <span className="uppercase">For the society by Arnab</span>
+        {currentView === 'welcome' && (
+          <button
+            onClick={() => handleNavigate('admin')}
+            className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors mt-1 focus:outline-none"
+          >
+            🛡️ Admin Panel
+          </button>
+        )}
         <span className="normal-case text-[0.65rem] max-w-md px-4 opacity-75 tracking-normal">
           🔒 Privacy Note: To help us understand and support our global community, we momentarily collect your approximate regional location (like city or country).
         </span>

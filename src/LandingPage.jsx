@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { fetchClinicalPillars } from './utils/supabaseSync';
 
 const DEFAULT_PILLARS = [
@@ -9,8 +9,18 @@ const DEFAULT_PILLARS = [
   { title: 'Somatic Disconnect', icon: '🧊', desc: 'Feeling numb or floaty. This is your nervous system providing a protective buffer against overwhelming sensations.', tip: 'Use the Grounding Matrix.' }
 ];
 
+const SHUFFLE_WORDS = ['word.', 'sentence.', 'syllable.', 'thing.', 'sound.'];
+
 export default function LandingPage({ onNavigate, isTransitioning }) {
   const [pillars, setPillars] = useState(DEFAULT_PILLARS);
+  const [wordIndex, setWordIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setWordIndex((prev) => (prev + 1) % SHUFFLE_WORDS.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     fetchClinicalPillars(DEFAULT_PILLARS).then(data => setPillars(data));
@@ -80,8 +90,23 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
           {/* Subtle glow behind the text to enhance readability over the noise */}
           <div className="absolute inset-0 bg-white/20 blur-3xl -z-10 rounded-[100px] pointer-events-none" />
 
-          <h2 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-slate-800 to-slate-600 tracking-tighter leading-[1.15] drop-shadow-sm">
-            Heal the unsaid, <br className="hidden md:block" /> without saying a word.
+          <h2 className="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-slate-800 to-slate-600 tracking-tighter leading-[1.15] drop-shadow-sm flex flex-col md:inline-block items-center">
+            Heal the unsaid, <br className="hidden md:block" /> without saying a{' '}
+            <span className="relative inline-flex flex-col overflow-hidden h-[1.1em] text-teal-600 bg-clip-text bg-gradient-to-br from-teal-500 to-teal-800 align-bottom justify-center min-w-[200px] md:min-w-[300px] text-center md:text-left">
+              <AnimatePresence mode="popLayout">
+                <motion.span
+                  key={wordIndex}
+                  initial={{ y: 50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -50, opacity: 0 }}
+                  transition={{ duration: 0.5, ease: 'easeOut' }}
+                  className="absolute inset-x-0 bottom-0 text-center md:text-left"
+                >
+                  {SHUFFLE_WORDS[wordIndex]}
+                </motion.span>
+              </AnimatePresence>
+              <span className="opacity-0 pointer-events-none select-none text-center md:text-left">{SHUFFLE_WORDS[0]}</span>
+            </span>
           </h2>
           <p className="text-sm text-slate-600 leading-relaxed font-medium mx-auto max-w-[280px] sm:max-w-xs md:max-w-md drop-shadow-sm mt-6 md:mt-8">
             A gentle, 100% private space to understand your heavy emotions—no direct questions, no reliving the past.
