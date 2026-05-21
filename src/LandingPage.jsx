@@ -1,13 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { fetchClinicalPillars } from './utils/supabaseSync';
+
+const DEFAULT_PILLARS = [
+  { title: 'Intrusive Guilt', icon: '⚖️', desc: 'Carrying blame for things outside your control as a way to feel in control of uncontrollable pain.', tip: 'Use the "Let Go Box" to physically release a blame story.' },
+  { title: 'Hypervigilance', icon: '👁️', desc: 'Your nervous system is on high alert, constantly scanning for danger. A brilliant survival mechanism that consumes energy.', tip: 'Try the Breathing Room to signal safety.' },
+  { title: 'Boundary Collapse', icon: '🫂', desc: 'Over-accommodating others to keep the peace when asserting needs felt risky in the past.', tip: 'Practice saying "I need a moment to think".' },
+  { title: 'Somatic Disconnect', icon: '🧊', desc: 'Feeling numb or floaty. This is your nervous system providing a protective buffer against overwhelming sensations.', tip: 'Use the Grounding Matrix.' }
+];
 
 export default function LandingPage({ onNavigate, isTransitioning }) {
-  const pillars = [
-    { title: 'Intrusive Guilt', icon: '⚖️', desc: 'Carrying blame for things outside your control as a way to feel in control of uncontrollable pain.', tip: 'Use the "Let Go Box" to physically release a blame story.' },
-    { title: 'Hypervigilance', icon: '👁️', desc: 'Your nervous system is on high alert, constantly scanning for danger. A brilliant survival mechanism that consumes energy.', tip: 'Try the Breathing Room to signal safety.' },
-    { title: 'Boundary Collapse', icon: '🫂', desc: 'Over-accommodating others to keep the peace when asserting needs felt risky in the past.', tip: 'Practice saying "I need a moment to think".' },
-    { title: 'Somatic Disconnect', icon: '🧊', desc: 'Feeling numb or floaty. This is your nervous system providing a protective buffer against overwhelming sensations.', tip: 'Use the Grounding Matrix.' }
-  ];
+  const [pillars, setPillars] = useState(DEFAULT_PILLARS);
+
+  useEffect(() => {
+    fetchClinicalPillars(DEFAULT_PILLARS).then(data => setPillars(data));
+  }, []);
+
 
   return (
     <div className={`relative min-h-screen w-full flex flex-col items-center transition-all duration-500 ease-out transform ${isTransitioning ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'} overflow-hidden`}>

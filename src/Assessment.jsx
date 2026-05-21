@@ -3,7 +3,7 @@ import { Radar, Bar } from 'react-chartjs-2';
 import { STORY_PHASES, DEEP_DIVE_PHASES } from './AssessmentData';
 import { supabase } from './supabaseClient';
 import { useEmotionalBaseline } from './hooks/useEmotionalBaseline';
-import { logAssessmentComplete } from './utils/supabaseTelemetry';
+import { logAssessmentComplete, getGeoIPDetails } from './utils/supabaseTelemetry';
 import {
   Chart as ChartJS,
   RadialLinearScale,
@@ -136,20 +136,27 @@ export default function Assessment({ onComplete, onNavigate }) {
 
         // ── Step 4: Also keep the existing surveys table write (resonance, etc.) 
         try {
+          const geo = await getGeoIPDetails();
           const { data, error } = await supabase
             .from('surveys')
             .insert([{ 
               survey_data: { 
                 score_normalized: normalizedScore,
-                dimension_count: finalScores.length
-              }
+                dimension_count: finalScores.length,
+                scores: finalScores, // Tracks category scores for validating question weights
+                responses: finalResponses // Tracks exact answers chosen to analyze question accuracy
+              },
+              ip_address: geo.ip,
+              country: geo.country,
+              city: geo.city,
+              region: geo.region
             }])
             .select();
             
           if (error) {
             console.error('Supabase Error saving survey:', error.message);
           } else if (data && data.length > 0) {
-            console.log('Survey record saved to Supabase.');
+            console.log('Survey record saved to Supabase with geolocation.');
             setSurveyId(data[0].id);
           }
         } catch (err) {

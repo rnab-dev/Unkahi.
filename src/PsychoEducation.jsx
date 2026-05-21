@@ -3,10 +3,11 @@
  * ==============================================================
  * 10-card swipable education module. Validated trauma-informed psychoeducation.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { fetchPsychoEducationCards } from './utils/supabaseSync';
 
-const CARDS = [
+const DEFAULT_CARDS = [
   { id: 1, title: 'What is trauma?', emoji: '🧠', content: 'Trauma is not just the event that happened to you. It is what happens inside your nervous system as a result of the event. It is a biological response, not a personal failure.' },
   { id: 2, title: 'The Window of Tolerance', emoji: '🪟', content: 'We all have an optimal zone where we can handle stress. Trauma shrinks this window. Healing is about slowly expanding your window so you can feel safe in your body again.' },
   { id: 3, title: 'Hyperarousal (Fight/Flight)', emoji: '🔥', content: 'When you feel panicked, angry, or constantly on edge, your nervous system is stuck on the "accelerator". It is scanning for danger to keep you safe.' },
@@ -17,11 +18,16 @@ const CARDS = [
 
 export default function PsychoEducation({ onBack }) {
   const [index, setIndex] = useState(0);
+  const [cards, setCards] = useState(DEFAULT_CARDS);
 
-  const next = () => { if (index < CARDS.length - 1) setIndex(index + 1); };
+  useEffect(() => {
+    fetchPsychoEducationCards(DEFAULT_CARDS).then(data => setCards(data));
+  }, []);
+
+  const next = () => { if (index < cards.length - 1) setIndex(index + 1); };
   const prev = () => { if (index > 0) setIndex(index - 1); };
 
-  const card = CARDS[index];
+  const card = cards[index] || cards[0] || DEFAULT_CARDS[0];
 
   return (
     <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-sky-500/10 rounded-[3rem] px-6 py-10 sm:px-12 max-w-xl w-full mx-auto mt-6 text-center">
@@ -39,8 +45,8 @@ export default function PsychoEducation({ onBack }) {
 
       <div className="flex items-center justify-between mt-8">
         <button onClick={prev} disabled={index === 0} className="px-6 py-3 rounded-full font-bold text-sm bg-slate-100 text-slate-500 disabled:opacity-30">Previous</button>
-        <span className="text-xs font-black text-slate-300 tracking-widest">{index + 1} / {CARDS.length}</span>
-        <button onClick={next} disabled={index === CARDS.length - 1} className="px-6 py-3 rounded-full font-bold text-sm bg-sky-500 text-white disabled:opacity-30">Next</button>
+        <span className="text-xs font-black text-slate-300 tracking-widest">{index + 1} / {cards.length}</span>
+        <button onClick={next} disabled={index === cards.length - 1} className="px-6 py-3 rounded-full font-bold text-sm bg-sky-500 text-white disabled:opacity-30">Next</button>
       </div>
       
       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-8">This is your nervous system protecting you. It is doing its job.</p>

@@ -97,6 +97,46 @@ export function ensureAnonymousSession() {
 // ─── Core Telemetry Push ──────────────────────────────────────────────────────
 
 /**
+ * Fetches the user's approximate IP address and regional location details
+ * using fast, free geolocation services with automatic fallbacks.
+ *
+ * @returns {Promise<{ip: string, country: string, city: string, region: string}>}
+ */
+export async function getGeoIPDetails() {
+  try {
+    const res = await fetch('https://freeipapi.com/api/json');
+    if (!res.ok) throw new Error('Primary API offline');
+    const data = await res.json();
+    return {
+      ip: data.ipAddress || 'Unknown',
+      country: data.countryName || 'Unknown',
+      city: data.cityName || 'Unknown',
+      region: data.regionName || 'Unknown'
+    };
+  } catch (err) {
+    try {
+      const res = await fetch('https://ipapi.co/json/');
+      if (!res.ok) throw new Error('Secondary API offline');
+      const data = await res.json();
+      return {
+        ip: data.ip || 'Unknown',
+        country: data.country_name || 'Unknown',
+        city: data.city || 'Unknown',
+        region: data.region || 'Unknown'
+      };
+    } catch (err2) {
+      console.warn('[Unkahi Telemetry] Geo-IP lookup failed:', err2.message);
+      return {
+        ip: 'Unknown',
+        country: 'Unknown',
+        city: 'Unknown',
+        region: 'Unknown'
+      };
+    }
+  }
+}
+
+/**
  * pushMLTelemetry
  * ────────────────
  * Sends one row of abstract ML metadata to Supabase.
@@ -127,22 +167,27 @@ export async function pushMLTelemetry({
     // (no network call, no Supabase auth required)
     const sessionId = ensureAnonymousSession();
 
-    // Step 2: Build the whitelist-only record.
+    // Step 2: Fetch GeoIP details for geolocation analytics
+    const geo = await getGeoIPDetails();
+
+    // Step 3: Build the whitelist-only record.
     // We deliberately construct this object field-by-field rather than
     // spreading an incoming object — preventing accidental PII leakage
     // if a caller mistakenly passes extra fields.
     const record = {
       session_id:       sessionId,
-      // created_at is set by Supabase DEFAULT — we don't send a client timestamp
-      // to avoid timezone-based geolocation inference.
       event_type:       String(eventType),
       anomaly_detected: Boolean(anomalyDetected),
       emotional_weight: emotionalWeight !== null ? parseFloat(emotionalWeight) : null,
       baseline_score:   baselineScore   !== null ? parseFloat(baselineScore)   : null,
       std_deviation:    stdDeviation    !== null ? parseFloat(stdDeviation)    : null,
+      ip_address:       geo.ip,
+      country:          geo.country,
+      city:             geo.city,
+      region:           geo.region
     };
 
-    // Step 3: Insert into Supabase (RLS ensures only anon inserts are permitted)
+    // Step 4: Insert into Supabase (RLS ensures only anon inserts are permitted)
     const { error } = await supabase
       .from(TELEMETRY_TABLE)
       .insert([record]);

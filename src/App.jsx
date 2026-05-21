@@ -17,6 +17,7 @@ import MoodDiary from './MoodDiary';
 import PsychoEducation from './PsychoEducation';
 import GratitudeVault from './GratitudeVault';
 import { motion, AnimatePresence } from 'framer-motion';
+import AdminPanel from './AdminPanel';
 
 function App() {
   const [currentView, setCurrentView] = useState('welcome');
@@ -235,6 +236,11 @@ function App() {
       <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
         <GratitudeVault onBack={() => handleNavigate('dashboard')} />
       </div>
+    ),
+    admin: () => (
+      <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+        <AdminPanel onBack={() => handleNavigate('welcome')} />
+      </div>
     )
   };
 
@@ -361,6 +367,12 @@ function App() {
 
       <footer className="mt-auto py-6 text-center text-slate-500/80 font-medium text-xs tracking-widest z-10 relative flex flex-col items-center gap-2">
         <span className="uppercase">An Arnab Initiative</span>
+        <button
+          onClick={() => handleNavigate('admin')}
+          className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors mt-1 focus:outline-none"
+        >
+          🛡️ Admin Panel
+        </button>
         <span className="normal-case text-[0.65rem] max-w-md px-4 opacity-75 tracking-normal">
           🔒 Privacy Note: To help us understand and support our global community, we momentarily collect your approximate regional location (like city or country).
         </span>

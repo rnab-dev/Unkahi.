@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { fetchLegalScenarios } from './utils/supabaseSync';
 
-const SCENARIOS = [
+const DEFAULT_SCENARIOS = [
   {
     id: 1,
     title: "The Late Night Colleague",
@@ -113,6 +114,11 @@ const FlipCard = ({ scenario }) => {
 
 export default function LegalRights({ onBack }) {
   const [activeTab, setActiveTab] = useState('scenarios');
+  const [scenarios, setScenarios] = useState(DEFAULT_SCENARIOS);
+
+  useEffect(() => {
+    fetchLegalScenarios(DEFAULT_SCENARIOS).then(data => setScenarios(data));
+  }, []);
 
   return (
     <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-indigo-500/10 rounded-[3rem] px-6 py-10 sm:px-12 sm:pt-10 sm:pb-16 mt-6 sm:mt-10 max-w-5xl w-full mx-auto flex flex-col items-center transform-gpu relative overflow-hidden min-h-[700px]">
@@ -162,7 +168,7 @@ export default function LegalRights({ onBack }) {
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
               className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full"
             >
-              {SCENARIOS.map(s => <FlipCard key={s.id} scenario={s} />)}
+              {scenarios.map(s => <FlipCard key={s.id} scenario={s} />)}
             </motion.div>
           ) : (
             <motion.div 
