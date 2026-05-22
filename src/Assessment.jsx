@@ -267,12 +267,16 @@ export default function Assessment({ onComplete, onNavigate }) {
     setResonance(value);
     if (surveyId) {
       const dbValue = value === 'yes' ? 'Accurate' : 'Inaccurate';
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('surveys')
         .update({ resonance: dbValue })
-        .eq('id', surveyId);
+        .eq('id', surveyId)
+        .select();
       
       if (error) console.error("Error updating resonance:", error.message);
+      if (!data || data.length === 0) {
+        console.warn("Resonance update returned 0 rows. RLS blocked the update.");
+      }
     }
   };
 
@@ -291,12 +295,16 @@ export default function Assessment({ onComplete, onNavigate }) {
         feedback: feedbackText.trim()
       };
       
-      const { error: updateError } = await supabase
+      const { data, error: updateError } = await supabase
         .from('surveys')
         .update({ survey_data: newData })
-        .eq('id', surveyId);
+        .eq('id', surveyId)
+        .select();
         
       if (updateError) throw updateError;
+      if (!data || data.length === 0) {
+         console.warn("Update returned 0 rows. This means Supabase Row Level Security (RLS) blocked the anonymous update.");
+      }
       setFeedbackSubmitted(true);
     } catch (err) {
       console.error("Error submitting feedback:", err.message);
