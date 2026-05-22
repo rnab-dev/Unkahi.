@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchClinicalPillars } from './utils/supabaseSync';
+import { supabase } from './supabaseClient';
 
 const DEFAULT_PILLARS = [
   { title: 'Intrusive Guilt', icon: '⚖️', desc: 'Carrying blame for things outside your control as a way to feel in control of uncontrollable pain.', tip: 'Use the "Let Go Box" to physically release a blame story.' },
@@ -14,6 +15,16 @@ const SHUFFLE_WORDS = ['word.', 'sentence.', 'syllable.', 'thing.', 'sound.'];
 export default function LandingPage({ onNavigate, isTransitioning }) {
   const [pillars, setPillars] = useState(DEFAULT_PILLARS);
   const [wordIndex, setWordIndex] = useState(0);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Silently check if an admin session is currently active
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setIsAdminLoggedIn(true);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -29,6 +40,41 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
 
   return (
     <div className={`relative min-h-screen w-full flex flex-col items-center transition-all duration-500 ease-out transform ${isTransitioning ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'} overflow-hidden`}>
+      
+      {/* Admin Session Banner (Enterprise Feature) */}
+      <AnimatePresence>
+        {isAdminLoggedIn && (
+          <motion.div 
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className="w-full bg-slate-900 text-white p-3 flex flex-col sm:flex-row items-center justify-between z-[200] border-b border-rose-500 shadow-xl"
+          >
+            <div className="flex items-center gap-2 mb-2 sm:mb-0">
+              <span className="text-rose-500 animate-pulse">⚠️</span>
+              <span className="text-xs font-black uppercase tracking-widest text-rose-100">Admin Mode Active:</span>
+              <span className="text-xs font-medium text-slate-300">You are currently logged into the Central Command.</span>
+            </div>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => onNavigate('admin')}
+                className="text-[10px] font-black uppercase tracking-widest bg-white text-slate-900 px-4 py-1.5 rounded-md hover:bg-slate-200 transition-colors"
+              >
+                Return to Dashboard
+              </button>
+              <button 
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  setIsAdminLoggedIn(false);
+                }}
+                className="text-[10px] font-black uppercase tracking-widest bg-rose-600 text-white px-4 py-1.5 rounded-md hover:bg-rose-500 transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 1. Ambient Breathing Orbs - Hardware Accelerated */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden transform-gpu">

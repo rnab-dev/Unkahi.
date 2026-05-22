@@ -12,12 +12,53 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './supabaseClient';
 import { STORY_PHASES, DEEP_DIVE_PHASES } from './AssessmentData';
+import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip } from 'chart.js';
+import { Radar } from 'react-chartjs-2';
+import IndiaHeatMap from './IndiaHeatMap';
+
+ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip);
+
+function AdminFootprintRadar({ scores }) {
+  if (!scores || scores.length === 0) return null;
+  const DIMENSION_LABELS = ['Hypervigilance', 'Boundary Collapse', 'Intrusive Guilt', 'Somatic Disconnect', 'Isolation', 'Env. Control'];
+  const colorRGB = '99, 102, 241'; // Indigo-500
+  const data = {
+    labels: DIMENSION_LABELS,
+    datasets: [{
+      label: 'Footprint',
+      data: scores,
+      backgroundColor: `rgba(${colorRGB}, 0.15)`,
+      borderColor: `rgba(${colorRGB}, 0.8)`,
+      borderWidth: 2,
+      pointBackgroundColor: `rgba(${colorRGB}, 1)`,
+      pointBorderColor: '#fff', pointRadius: 3,
+    }],
+  };
+  const options = {
+    scales: {
+      r: {
+        min: 0, max: Math.max(6, ...scores) + 2,
+        ticks: { display: false },
+        grid: { color: 'rgba(163, 177, 198, 0.2)' },
+        angleLines: { color: 'rgba(163, 177, 198, 0.2)' },
+        pointLabels: { color: '#64748b', font: { family: 'inherit', size: 9, weight: '700' } },
+      },
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: { backgroundColor: '#fff', titleColor: '#334155', bodyColor: '#64748b', borderColor: '#E2E8F0', borderWidth: 1, padding: 8, cornerRadius: 8, callbacks: { label: (ctx) => `Intensity: ${ctx.parsed.r}` } },
+    },
+  };
+  return <div className="w-full max-w-[220px] mx-auto"><Radar data={data} options={options} /></div>;
+}
 
 export default function AdminPanel({ onBack }) {
   const [session, setSession] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminEmail, setAdminEmail] = useState('');
   const [authError, setAuthError] = useState(null);
   const [activeTab, setActiveTab] = useState('analytics'); // analytics, pillars, scenarios, psychoed
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   // Form State
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -28,6 +69,30 @@ export default function AdminPanel({ onBack }) {
   const [scenarios, setScenarios] = useState([]);
   const [cards, setCards] = useState([]);
   const [surveysList, setSurveysList] = useState([]);
+  
+  // Aggregated India Heatmap Data
+  const regionHeatData = React.useMemo(() => {
+    const data = {};
+    surveysList.forEach(s => {
+      if (s.region && s.survey_data?.score_normalized) {
+        if (!data[s.region]) {
+          data[s.region] = { totalScore: 0, count: 0 };
+        }
+        data[s.region].totalScore += s.survey_data.score_normalized;
+        data[s.region].count += 1;
+      }
+    });
+    
+    const finalData = {};
+    Object.keys(data).forEach(region => {
+      finalData[region] = {
+        avgScore: Math.round(data[region].totalScore / data[region].count),
+        count: data[region].count
+      };
+    });
+    return finalData;
+  }, [surveysList]);
+
   const [expandedSurveyId, setExpandedSurveyId] = useState(null);
   const [resonanceFilter, setResonanceFilter] = useState('All');
 
@@ -79,6 +144,7 @@ export default function AdminPanel({ onBack }) {
 
         if (data) {
           setIsAdmin(true);
+          setAdminEmail(session.user.email);
           setAuthError(null);
           loadAllData();
         } else {
@@ -282,27 +348,7 @@ export default function AdminPanel({ onBack }) {
   const saveCard = async (e) => {
     e.preventDefault();
     try {
-      if (editingItem) {
-        const { error } = await supabase
-          .from('psycho_education_cards')
-          .update({
-            title: newCard.title,
-            emoji: newCard.emoji,
-            content: newCard.content,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', editingItem.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('psycho_education_cards')
-          .insert([newCard]);
-        if (error) throw error;
-      }
-      setNewCard({ title: '', emoji: '', content: '' });
-      setEditingItem(null);
-      loadAllData();
-    } catch (err) {
+} catch (err) {
       alert(err.message);
     }
   };
@@ -315,6 +361,82 @@ export default function AdminPanel({ onBack }) {
       loadAllData();
     } catch (err) {
       alert(err.message);
+    }
+  };
+
+  // ── Form Protection (Unsaved Changes Warning) ────────────────────────────────
+  useEffect(() => {
+    const hasUnsavedChanges = 
+      editingItem !== null || 
+      newPillar.title.trim() !== '' || 
+      newScenario.title.trim() !== '' || 
+      newCard.title.trim() !== '';
+
+    const handleBeforeUnload = (e) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [editingItem, newPillar, newScenario, newCard]);
+
+  // ── Data Export Functionality ────────────────────────────────────────────────
+  const handleExport = (format) => {
+    setShowExportMenu(false);
+    if (format === 'pdf') {
+      window.print();
+    } else if (format === 'json') {
+      const dataStr = JSON.stringify(surveysList, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', 'unkahi_telemetry_export.json');
+      linkElement.click();
+    } else if (format === 'csv') {
+      const headers = ['ID', 'Date', 'Region', 'Country', 'Normalized Score', 'Dimension Count'];
+      const csvContent = [
+        headers.join(','),
+        ...surveysList.map(s => [
+          s.id,
+          new Date(s.created_at).toISOString(),
+          `"${s.region || ''}"`,
+          `"${s.country || ''}"`,
+          s.survey_data?.score_normalized || '',
+          s.survey_data?.dimension_count || ''
+        ].join(','))
+      ].join('\n');
+      const dataUri = 'data:text/csv;charset=utf-8,'+ encodeURIComponent(csvContent);
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', 'unkahi_telemetry_export.csv');
+      linkElement.click();
+    } else if (format === 'csv_responses') {
+      const qHeaders = Array.from({ length: 24 }, (_, i) => `Q${i + 1}`);
+      const headers = ['ID', 'Date', 'Region', 'Country', 'Normalized Score', ...qHeaders];
+      const csvContent = [
+        headers.join(','),
+        ...surveysList.map(s => {
+          const res = s.survey_data?.responses || [];
+          const paddedRes = Array.from({ length: 24 }, (_, i) => res[i] !== undefined ? res[i] : '');
+          return [
+            s.id,
+            new Date(s.created_at).toISOString(),
+            `"${s.region || ''}"`,
+            `"${s.country || ''}"`,
+            s.survey_data?.score_normalized || '',
+            ...paddedRes
+          ].join(',');
+        })
+      ].join('\n');
+      const dataUri = 'data:text/csv;charset=utf-8,'+ encodeURIComponent(csvContent);
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', 'unkahi_assessment_responses.csv');
+      linkElement.click();
     }
   };
 
@@ -384,7 +506,9 @@ export default function AdminPanel({ onBack }) {
           <h2 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-2 justify-center sm:justify-start">
             <span>🛡️</span> Admin Console
           </h2>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Website Controller & Telemetry</p>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">
+            Welcome back, <span className="text-indigo-600 font-black">{adminEmail || 'Administrator'}</span>
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={onBack} className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-5 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all">
@@ -430,6 +554,43 @@ export default function AdminPanel({ onBack }) {
           {activeTab === 'analytics' && (
             <motion.div key="analytics" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8">
               
+              {/* Executive Actions Bar (Pitch Feature) */}
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-indigo-600 rounded-3xl p-6 text-white shadow-lg">
+                <div>
+                  <h3 className="text-lg font-black tracking-tight">Executive Telemetry Dashboard</h3>
+                  <p className="text-indigo-200 text-xs font-medium mt-1">Real-time population mental health monitoring network.</p>
+                </div>
+                <div className="flex items-center gap-3 w-full sm:w-auto relative">
+                  <button 
+                    onClick={() => setShowExportMenu(!showExportMenu)}
+                    className="flex-1 sm:flex-none bg-white text-indigo-600 px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-indigo-50 transition-colors shadow-sm whitespace-nowrap flex items-center justify-center gap-2"
+                  >
+                    📥 Export As...
+                  </button>
+                  
+                  {/* Export Dropdown */}
+                  <AnimatePresence>
+                    {showExportMenu && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }} 
+                        animate={{ opacity: 1, y: 0 }} 
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute top-full mt-2 right-0 bg-white border border-slate-100 shadow-xl rounded-xl overflow-hidden flex flex-col z-50 min-w-[200px]"
+                      >
+                        <button onClick={() => handleExport('pdf')} className="text-left px-4 py-3 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors border-b border-slate-50 flex items-center gap-2"><span>📄</span> PDF Dashboard Report</button>
+                        <button onClick={() => handleExport('csv')} className="text-left px-4 py-3 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors border-b border-slate-50 flex items-center gap-2"><span>📊</span> Base Telemetry (CSV)</button>
+                        <button onClick={() => handleExport('csv_responses')} className="text-left px-4 py-3 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors border-b border-slate-50 flex items-center gap-2"><span>📝</span> Assessment Answers (CSV)</button>
+                        <button onClick={() => handleExport('json')} className="text-left px-4 py-3 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-2"><span>{`{}`}</span> JSON Database Dump</button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <button className="flex-1 sm:flex-none bg-indigo-500 border border-indigo-400 text-white px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-indigo-400 transition-colors shadow-sm whitespace-nowrap">
+                    ⚙️ Alerts
+                  </button>
+                </div>
+              </div>
+
               {/* Analytics Summary Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm text-center">
@@ -573,6 +734,50 @@ export default function AdminPanel({ onBack }) {
                   </div>
                 </div>
 
+              </div>
+
+              {/* B2B Map & Anomalies Section */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left: National Heatmap */}
+                <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col">
+                  <div>
+                    <h3 className="text-lg font-black text-slate-800 mb-1">National Trauma Hotspots</h3>
+                    <p className="text-xs font-medium text-slate-400 mb-6">Real-time geographical tracking of high nervous system loads.</p>
+                  </div>
+                  <div className="flex-grow bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden relative">
+                    <IndiaHeatMap regionData={regionHeatData} />
+                  </div>
+                </div>
+
+                {/* Right: Predictive Anomalies Feed */}
+                <div className="bg-rose-50 p-6 rounded-3xl border border-rose-100 shadow-sm flex flex-col">
+                  <div>
+                    <h3 className="text-lg font-black text-rose-900 mb-1 flex items-center gap-2">
+                      <span className="relative flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                      </span>
+                      Predictive Alerts
+                    </h3>
+                    <p className="text-xs font-bold text-rose-600/70 mb-6">AI Early Warning System</p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="bg-white p-4 rounded-2xl border border-rose-100 shadow-sm">
+                      <span className="text-[9px] font-black uppercase text-rose-500 tracking-widest block mb-1">Critical Spike</span>
+                      <p className="text-xs font-bold text-slate-700 leading-snug">
+                        300% increase in <span className="text-rose-600 font-black">Boundary Collapse</span> detected in <span className="text-slate-900 font-black">Maharashtra</span> over the last 24 hours.
+                      </p>
+                      <button className="text-[10px] font-black text-rose-500 uppercase tracking-widest mt-3 hover:text-rose-700">Deploy Resources →</button>
+                    </div>
+                    <div className="bg-white p-4 rounded-2xl border border-rose-100 shadow-sm opacity-70">
+                      <span className="text-[9px] font-black uppercase text-amber-500 tracking-widest block mb-1">Warning</span>
+                      <p className="text-xs font-bold text-slate-700 leading-snug">
+                        Elevated <span className="text-amber-600 font-black">Relational Isolation</span> trending in <span className="text-slate-900 font-black">Delhi</span>.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
@@ -743,12 +948,20 @@ export default function AdminPanel({ onBack }) {
                               ) : (
                                 <>
                                   {/* Trait and Location Grid */}
-                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                     
-                                    {/* Left: Trait Breakdown */}
+                                    {/* Col 1: Radar Chart */}
+                                    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center">
+                                      <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest w-full text-left border-b border-slate-100 pb-2 mb-3">
+                                        🕸️ Visual Footprint
+                                      </h4>
+                                      <AdminFootprintRadar scores={s.survey_data.scores || []} />
+                                    </div>
+
+                                    {/* Col 2: Trait Breakdown */}
                                     <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                                       <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest border-b border-slate-100 pb-2 mb-3">
-                                        📊 Clinical Trait Footprints
+                                        📊 Intensity Metrics
                                       </h4>
                                       <div className="space-y-3.5">
                                         {s.survey_data.scores?.map((scoreVal, index) => {

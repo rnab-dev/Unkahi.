@@ -366,7 +366,7 @@ function App() {
       </main>
 
       <footer className="mt-auto py-6 text-center text-slate-500/80 font-medium text-xs tracking-widest z-10 relative flex flex-col items-center gap-2">
-        <span className="uppercase">For the society by Arnab</span>
+        <span className="uppercase">For the society by ASA</span>
         {currentView === 'welcome' && (
           <button
             onClick={() => handleNavigate('admin')}

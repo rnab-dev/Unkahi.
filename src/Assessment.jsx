@@ -62,6 +62,7 @@ export default function Assessment({ onComplete, onNavigate }) {
   const [deepDiveState, setDeepDiveState] = useState('idle'); // 'idle' | 'warning' | 'active' | 'done'
   const [deepDiveStep, setDeepDiveStep] = useState(0);
   const [deepDiveScores, setDeepDiveScores] = useState([0, 0, 0, 0, 0, 0]);
+  const [deepDiveResponses, setDeepDiveResponses] = useState([]);
 
   const SOMATIC_OPTIONS = [
     { id: 'chest', label: 'Tight Chest / Heart Racing', icon: '🫀', weights: [3, 0, 0, 0, 0, 0] }, // Hypervigilance
@@ -446,22 +447,48 @@ export default function Assessment({ onComplete, onNavigate }) {
   if (deepDiveState === 'active') {
     const deepPhase = DEEP_DIVE_PHASES[deepDiveStep];
 
-    const handleDeepDiveSelect = (weights) => {
+    const handleDeepDiveSelect = (weights, optionIndex, optionText) => {
       setIsFading(true);
       const updatedScores = deepDiveScores.map((s, i) => s + weights[i]);
+      
+      const currentDeepDiveResponse = {
+         step: STORY_PHASES.length + deepDiveStep + 1,
+         option_selected: optionIndex,
+         answer_text: optionText
+      };
+      const updatedDeepDiveResponses = [...deepDiveResponses, currentDeepDiveResponse];
 
       setTimeout(() => {
         if (deepDiveStep < DEEP_DIVE_PHASES.length - 1) {
           setDeepDiveScores(updatedScores);
+          setDeepDiveResponses(updatedDeepDiveResponses);
           setDeepDiveStep(prev => prev + 1);
           setIsFading(false);
         } else {
           setDeepDiveScores(updatedScores);
+          setDeepDiveResponses(updatedDeepDiveResponses);
           setDeepDiveState('done');
           setIsFading(false);
+          
           // Notify App.jsx immediately with combined scores
           const combined = scores.map((s, i) => s + updatedScores[i]);
+          const combinedResponses = [...responses, ...updatedDeepDiveResponses];
           onComplete && onComplete(combined, null, 'deepdive');
+
+          // Update Supabase with the highly accurate combined footprint and full responses
+          if (surveyId) {
+             const newScoreNormalized = Math.min(100, Math.round((combined.reduce((a,b)=>a+b,0) / 64) * 100));
+             supabase.from('surveys').update({
+                survey_data: {
+                  score_normalized: newScoreNormalized,
+                  dimension_count: combined.length,
+                  scores: combined,
+                  responses: combinedResponses
+                }
+             }).eq('id', surveyId).then(({error}) => {
+                if (error) console.error("Error saving deep dive scores:", error.message);
+             });
+          }
         }
       }, 300);
     };
@@ -488,7 +515,7 @@ export default function Assessment({ onComplete, onNavigate }) {
             {deepPhase.options.map((opt, idx) => (
               <button
                 key={idx}
-                onClick={() => handleDeepDiveSelect(opt.weights)}
+                onClick={() => handleDeepDiveSelect(opt.weights, idx, opt.text)}
                 className="bg-white/80 hover:bg-purple-50 rounded-[1.5rem] w-full h-auto min-h-[4rem] text-left p-4 sm:p-5 text-sm sm:text-base font-bold text-slate-600 hover:text-purple-700 flex items-center justify-between group shadow-sm border border-white hover:border-purple-200 transition-all hover:-translate-y-1 hover:shadow-md"
               >
                 <span className="pr-4 leading-snug">{opt.text}</span>
