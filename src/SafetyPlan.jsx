@@ -343,10 +343,14 @@ export default function SafetyPlan({ onBack }) {
     } catch { setMode('intro'); }
   }, []);
 
-  const savePlan = (updatedPlan) => {
+  const savePlan = async (updatedPlan) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedPlan));
-    } catch (e) {}
+      const { syncSafetyPlan } = await import('./utils/supabaseSync');
+      syncSafetyPlan(updatedPlan);
+    } catch (e) {
+      console.warn("Failed to sync safety plan", e);
+    }
   };
 
   const updateStep = (id, val) => {

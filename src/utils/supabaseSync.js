@@ -181,11 +181,11 @@ export async function syncSafetyPlan(planData) {
     const sessionId = ensureAnonymousSession();
     const { error } = await supabase
       .from('safety_plans')
-      .upsert({
+      .insert([{
         session_id: sessionId,
         plan_data: planData,
         updated_at: new Date().toISOString()
-      }, { onConflict: 'session_id' });
+      }]);
 
     if (error) {
       console.error('[Sync User Data] Safety plan sync failed:', error.message);

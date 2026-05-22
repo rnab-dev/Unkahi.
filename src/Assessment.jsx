@@ -267,16 +267,27 @@ export default function Assessment({ onComplete, onNavigate }) {
     setResonance(value);
     if (surveyId) {
       const dbValue = value === 'yes' ? 'Accurate' : 'Inaccurate';
-      const { data, error } = await supabase
-        .from('surveys')
-        .update({ resonance: dbValue })
-        .eq('id', surveyId)
-        .select();
       
-      if (error) console.error("Error updating resonance:", error.message);
-      if (!data || data.length === 0) {
-        console.warn("Resonance update returned 0 rows. RLS blocked the update.");
-      }
+      const newId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+        ? crypto.randomUUID() 
+        : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+          });
+          
+      const geo = await getGeoIPDetails();
+      const { error } = await supabase
+        .from('surveys')
+        .insert([{
+          id: newId,
+          resonance: dbValue,
+          survey_data: { type: 'quick_resonance', parent_survey_id: surveyId },
+          ip_address: geo.ip,
+          country: geo.country,
+          city: geo.city,
+          region: geo.region
+        }]);
+      
+      if (error) console.error("Error inserting resonance:", error.message);
     }
   };
 
@@ -288,6 +299,8 @@ export default function Assessment({ onComplete, onNavigate }) {
       const normalizedScore = Math.min(100, Math.round((totalScore / assumedMax) * 100));
 
       const newData = {
+        type: 'feedback_submission',
+        parent_survey_id: surveyId,
         score_normalized: normalizedScore,
         dimension_count: scores.length,
         scores: scores,
@@ -295,16 +308,27 @@ export default function Assessment({ onComplete, onNavigate }) {
         feedback: feedbackText.trim()
       };
       
-      const { data, error: updateError } = await supabase
+      const newId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+        ? crypto.randomUUID() 
+        : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+          });
+          
+      const geo = await getGeoIPDetails();
+      const { error: insertError } = await supabase
         .from('surveys')
-        .update({ survey_data: newData })
-        .eq('id', surveyId)
-        .select();
+        .insert([{
+          id: newId,
+          survey_data: newData,
+          resonance: resonance === 'yes' ? 'Accurate' : resonance === 'no' ? 'Inaccurate' : null,
+          ip_address: geo.ip,
+          country: geo.country,
+          city: geo.city,
+          region: geo.region
+        }]);
         
-      if (updateError) throw updateError;
-      if (!data || data.length === 0) {
-         console.warn("Update returned 0 rows. This means Supabase Row Level Security (RLS) blocked the anonymous update.");
-      }
+      if (insertError) throw insertError;
+      
       setFeedbackSubmitted(true);
     } catch (err) {
       console.error("Error submitting feedback:", err.message);

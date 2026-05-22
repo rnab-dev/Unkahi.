@@ -786,6 +786,7 @@ export default function AdminPanel({ onBack }) {
           {/* Tab 5: ANONYMOUS ASSESSMENT LOGS AUDIT */}
           {activeTab === 'surveys' && (() => {
             const filteredSurveys = surveysList.filter(s => {
+              if (s.survey_data?.type === 'quick_resonance' || s.survey_data?.type === 'feedback_submission') return false;
               if (resonanceFilter === 'All') return true;
               if (resonanceFilter === 'Unrated') return !s.resonance;
               return s.resonance === resonanceFilter;
@@ -804,7 +805,7 @@ export default function AdminPanel({ onBack }) {
                   <div className="flex gap-4">
                     <div className="bg-white px-5 py-3 rounded-2xl border border-slate-100 shadow-sm text-center min-w-[100px]">
                       <span className="text-xl block">📝</span>
-                      <span className="text-lg font-black text-slate-800">{surveysList.length}</span>
+                      <span className="text-lg font-black text-slate-800">{surveysList.filter(s => s.survey_data?.type !== 'quick_resonance' && s.survey_data?.type !== 'feedback_submission').length}</span>
                       <span className="text-[9px] font-black uppercase text-slate-400 block tracking-wider mt-0.5">Total Runs</span>
                     </div>
                     <div className="bg-white px-5 py-3 rounded-2xl border border-slate-100 shadow-sm text-center min-w-[100px]">

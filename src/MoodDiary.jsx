@@ -28,7 +28,7 @@ export default function MoodDiary({ onBack, onNavigate }) {
     } catch {}
   }, []);
 
-  const saveEntry = () => {
+  const saveEntry = async () => {
     const newEntry = {
       id: Date.now(),
       date: new Date().toISOString(),
@@ -37,6 +37,15 @@ export default function MoodDiary({ onBack, onNavigate }) {
     const updated = [newEntry, ...entries];
     setEntries(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    
+    // Abstract analytics push to Supabase
+    try {
+      const { syncMoodDiaryEntry } = await import('./utils/supabaseSync');
+      syncMoodDiaryEntry(newEntry);
+    } catch (e) {
+      console.warn("Failed to sync mood diary to telemetry", e);
+    }
+
     setStep('list');
     setForm({ wot: 5, emotions: [], notes: '' });
   };

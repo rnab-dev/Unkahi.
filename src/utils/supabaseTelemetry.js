@@ -102,36 +102,43 @@ export function ensureAnonymousSession() {
  *
  * @returns {Promise<{ip: string, country: string, city: string, region: string}>}
  */
+let cachedGeo = null;
+
 export async function getGeoIPDetails() {
+  if (cachedGeo) return cachedGeo;
+  
   try {
     const res = await fetch('https://freeipapi.com/api/json');
     if (!res.ok) throw new Error('Primary API offline');
     const data = await res.json();
-    return {
+    cachedGeo = {
       ip: data.ipAddress || 'Unknown',
       country: data.countryName || 'Unknown',
       city: data.cityName || 'Unknown',
       region: data.regionName || 'Unknown'
     };
+    return cachedGeo;
   } catch (err) {
     try {
       const res = await fetch('https://ipapi.co/json/');
       if (!res.ok) throw new Error('Secondary API offline');
       const data = await res.json();
-      return {
+      cachedGeo = {
         ip: data.ip || 'Unknown',
         country: data.country_name || 'Unknown',
         city: data.city || 'Unknown',
         region: data.region || 'Unknown'
       };
+      return cachedGeo;
     } catch (err2) {
       console.warn('[Unkahi Telemetry] Geo-IP lookup failed:', err2.message);
-      return {
+      cachedGeo = {
         ip: 'Unknown',
         country: 'Unknown',
         city: 'Unknown',
         region: 'Unknown'
       };
+      return cachedGeo;
     }
   }
 }
@@ -180,11 +187,7 @@ export async function pushMLTelemetry({
       anomaly_detected: Boolean(anomalyDetected),
       emotional_weight: emotionalWeight !== null ? parseFloat(emotionalWeight) : null,
       baseline_score:   baselineScore   !== null ? parseFloat(baselineScore)   : null,
-      std_deviation:    stdDeviation    !== null ? parseFloat(stdDeviation)    : null,
-      ip_address:       geo.ip,
-      country:          geo.country,
-      city:             geo.city,
-      region:           geo.region
+      std_deviation:    stdDeviation    !== null ? parseFloat(stdDeviation)    : null
     };
 
     // Step 4: Insert into Supabase (RLS ensures only anon inserts are permitted)
