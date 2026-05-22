@@ -525,6 +525,7 @@ export default function AdminPanel({ onBack }) {
         {[
           { id: 'analytics', label: '📊 Telemetry Charts' },
           { id: 'surveys', label: '📋 Assessment Logs' },
+          { id: 'feedback', label: '🗣️ User Feedback' },
           { id: 'pillars', label: '🌸 Clinical Pillars' },
           { id: 'scenarios', label: '⚖️ Scenarios' },
           { id: 'psychoed', label: '🧠 Library' }
@@ -1085,6 +1086,68 @@ export default function AdminPanel({ onBack }) {
               </motion.div>
             );
           })()}
+
+          {/* Tab: FEEDBACK */}
+          {activeTab === 'feedback' && (
+            <motion.div key="feedback" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
+              <div className="bg-indigo-600 rounded-3xl p-6 text-white shadow-lg mb-8">
+                <h3 className="text-lg font-black tracking-tight flex items-center gap-2"><span>🗣️</span> User Feedback Inbox</h3>
+                <p className="text-indigo-200 text-xs font-medium mt-1">
+                  Direct anonymous suggestions and accuracy reports from users.
+                </p>
+              </div>
+
+              <div className="grid gap-4">
+                {surveysList.filter(s => s.survey_data?.feedback).length === 0 ? (
+                  <div className="text-center p-12 bg-slate-50 rounded-3xl border border-slate-100">
+                    <span className="text-4xl mb-4 block">📭</span>
+                    <p className="text-slate-500 font-medium">No user feedback received yet.</p>
+                  </div>
+                ) : (
+                  surveysList
+                    .filter(s => s.survey_data?.feedback)
+                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                    .map(s => {
+                      const topPillarIdx = s.survey_data?.scores ? s.survey_data.scores.indexOf(Math.max(...s.survey_data.scores)) : -1;
+                      const DIMENSION_LABELS = ['Hypervigilance', 'Boundary Collapse', 'Intrusive Guilt', 'Somatic Disconnect', 'Isolation', 'Env. Control'];
+                      
+                      return (
+                        <div key={s.id} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col gap-4">
+                          <div className="flex justify-between items-start">
+                            <div className="flex gap-2 items-center">
+                              <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${
+                                s.resonance === 'Accurate' ? 'bg-green-100 text-green-700' :
+                                s.resonance === 'Inaccurate' ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-500'
+                              }`}>
+                                {s.resonance || 'Unrated'}
+                              </span>
+                              <span className="text-xs font-bold text-slate-400">
+                                {new Date(s.created_at).toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Primary Trait</p>
+                              <span className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold">
+                                {topPillarIdx >= 0 ? DIMENSION_LABELS[topPillarIdx] : 'Unknown'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <p className="text-slate-700 text-sm font-medium leading-relaxed italic">
+                              "{s.survey_data.feedback}"
+                            </p>
+                          </div>
+                          <div className="text-xs text-slate-400 font-medium">
+                            <span className="mr-3">📍 {s.city || 'Unknown'}, {s.region || 'Unknown'}</span>
+                            <span>Score: {s.survey_data?.score_normalized || 0}%</span>
+                          </div>
+                        </div>
+                      );
+                    })
+                )}
+              </div>
+            </motion.div>
+          )}
 
           {/* Tab 2: CLINICAL PILLARS CONTENT CRUD */}
           {activeTab === 'pillars' && (

@@ -57,6 +57,8 @@ export default function Assessment({ onComplete, onNavigate }) {
   const [loadPercentage, setLoadPercentage] = useState(0);
   const [resonance, setResonance] = useState(null);
   const [surveyId, setSurveyId] = useState(null); // Holds the Supabase row ID for resonance update
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
   // ── Deep Dive State ────────────────────────────────────────────────────────
   const [deepDiveState, setDeepDiveState] = useState('idle'); // 'idle' | 'warning' | 'active' | 'done'
@@ -264,12 +266,40 @@ export default function Assessment({ onComplete, onNavigate }) {
   const handleResonance = async (value) => {
     setResonance(value);
     if (surveyId) {
+      const dbValue = value === 'yes' ? 'Accurate' : 'Inaccurate';
       const { error } = await supabase
         .from('surveys')
-        .update({ resonance: value })
+        .update({ resonance: dbValue })
         .eq('id', surveyId);
       
       if (error) console.error("Error updating resonance:", error.message);
+    }
+  };
+
+  const submitFeedback = async () => {
+    if (!feedbackText.trim() || !surveyId) return;
+    try {
+      const totalScore = scores.reduce((a, b) => a + b, 0);
+      const assumedMax = 40; 
+      const normalizedScore = Math.min(100, Math.round((totalScore / assumedMax) * 100));
+
+      const newData = {
+        score_normalized: normalizedScore,
+        dimension_count: scores.length,
+        scores: scores,
+        responses: responses,
+        feedback: feedbackText.trim()
+      };
+      
+      const { error: updateError } = await supabase
+        .from('surveys')
+        .update({ survey_data: newData })
+        .eq('id', surveyId);
+        
+      if (updateError) throw updateError;
+      setFeedbackSubmitted(true);
+    } catch (err) {
+      console.error("Error submitting feedback:", err.message);
     }
   };
 
@@ -337,7 +367,31 @@ export default function Assessment({ onComplete, onNavigate }) {
             <button onClick={() => handleResonance('yes')} className={`rounded-full px-6 py-3 md:px-8 md:py-4 font-extrabold text-base md:text-lg transition-all duration-300 w-full sm:w-auto shadow-sm ${resonance === 'yes' ? 'bg-[#A3BE8C] text-white shadow-lg -translate-y-1' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>👍 Yes, accurate</button>
             <button onClick={() => handleResonance('no')} className={`rounded-full px-6 py-3 md:px-8 md:py-4 font-extrabold text-base md:text-lg transition-all duration-300 w-full sm:w-auto shadow-sm ${resonance === 'no' ? 'bg-[#B48EAD] text-white shadow-lg -translate-y-1' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>👎 Not quite right</button>
           </div>
-          <div className={`overflow-hidden transition-all duration-500 ${resonance ? 'max-h-20 opacity-100 mb-10' : 'max-h-0 opacity-0'}`}><p className="text-[#D08770] font-extrabold text-xl">Thank you for tuning in to yourself.</p></div>
+          
+          <div className={`overflow-hidden transition-all duration-500 ${resonance ? 'max-h-96 opacity-100 mb-10' : 'max-h-0 opacity-0'}`}>
+            <p className="text-[#D08770] font-extrabold text-xl mb-4">Thank you for tuning in to yourself.</p>
+            {!feedbackSubmitted ? (
+              <div className="max-w-lg mx-auto bg-white/60 p-6 rounded-3xl border border-white/50 shadow-sm mt-4">
+                <p className="text-slate-600 font-bold mb-3">How can we improve this assessment?</p>
+                <textarea
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  placeholder="Your completely anonymous feedback helps us refine the algorithm..."
+                  className="w-full h-24 p-4 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 resize-none bg-white text-slate-700 text-sm font-medium mb-3"
+                ></textarea>
+                <button
+                  onClick={submitFeedback}
+                  className="bg-slate-800 text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-slate-700 transition-colors w-full"
+                >
+                  Submit Anonymous Feedback
+                </button>
+              </div>
+            ) : (
+              <div className="max-w-lg mx-auto bg-green-50 p-4 rounded-3xl border border-green-100 shadow-sm mt-4">
+                <p className="text-green-700 font-bold">Feedback received. Thank you for making Unkahi better.</p>
+              </div>
+            )}
+          </div>
           
           <div className="bg-teal-50 border border-teal-200 rounded-2xl p-4 md:p-6 mb-8 max-w-sm mx-auto w-full">
             <p className="text-teal-700 font-bold text-xs md:text-sm uppercase tracking-wider mb-2">Recommended for You Now</p>
