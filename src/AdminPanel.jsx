@@ -559,7 +559,7 @@ export default function AdminPanel({ onBack }) {
 
   // Admin Dashboard Rendered
   return (
-    <div className="w-full max-w-[1400px] mx-auto bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[3rem] px-6 py-10 sm:px-12 sm:pb-16 mt-6 relative overflow-hidden min-h-[800px] flex flex-col">
+    <div className="w-full max-w-[1400px] mx-auto bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[3rem] px-4 py-8 sm:px-12 pb-28 sm:pb-16 mt-6 relative overflow-hidden min-h-[500px] lg:min-h-[800px] flex flex-col">
 
       {/* Header Row */}
       <div className="flex flex-col sm:flex-row items-center justify-between w-full relative z-10 border-b border-slate-200/50 pb-6 mb-8 gap-4 sm:gap-0 flex-shrink-0">
@@ -597,15 +597,15 @@ export default function AdminPanel({ onBack }) {
       )}
 
       {/* Main Layout Area */}
-      <div className="flex flex-col lg:flex-row gap-8 w-full relative z-10 flex-grow">
-
-        {/* Vertical Sidebar */}
-        <div className="flex flex-col bg-slate-100/50 backdrop-blur-md p-3 rounded-3xl w-full lg:w-64 flex-shrink-0 space-y-1 border border-slate-200/50 h-fit">
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 w-full relative z-10 flex-grow">
+ 
+        {/* Responsive Tab Bar (Horizontal Scroll on Mobile, Vertical Sidebar on Desktop) */}
+        <div className="flex flex-row lg:flex-col overflow-x-auto lg:overflow-visible bg-slate-100/50 backdrop-blur-md p-2 rounded-2xl md:rounded-3xl w-full lg:w-64 flex-shrink-0 gap-1.5 border border-slate-200/50 h-fit scrollbar-none snap-x whitespace-nowrap">
           {[
-            { id: 'analytics', label: '📊 Telemetry Charts', adminOnly: true },
-            { id: 'surveys', label: '📋 Assessment Logs', adminOnly: true },
-            { id: 'feedback', label: '🗣️ User Feedback', adminOnly: true },
-            { id: 'pillars', label: '🌸 Clinical Pillars', adminOnly: true },
+            { id: 'analytics', label: '📊 Charts', adminOnly: true },
+            { id: 'surveys', label: '📋 Logs', adminOnly: true },
+            { id: 'feedback', label: '🗣️ Feedback', adminOnly: true },
+            { id: 'pillars', label: '🌸 Pillars', adminOnly: true },
             { id: 'scenarios', label: '⚖️ Scenarios', adminOnly: true },
             { id: 'psychoed', label: '🧠 Library', adminOnly: true },
             { id: 'cohort_gen', label: '🔗 B2B Links', adminOnly: true },
@@ -617,7 +617,7 @@ export default function AdminPanel({ onBack }) {
             <button
               key={t.id}
               onClick={() => { setActiveTab(t.id); setEditingItem(null); }}
-              className={`text-left w-full py-3.5 px-4 rounded-2xl text-sm font-black transition-all ${activeTab === t.id ? 'bg-white text-indigo-600 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+              className={`snap-center inline-block py-2.5 px-4 rounded-xl md:rounded-2xl text-xs font-black transition-all ${activeTab === t.id ? 'bg-white text-indigo-600 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
             >
               {t.label}
             </button>

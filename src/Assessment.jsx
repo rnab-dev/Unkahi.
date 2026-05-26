@@ -344,7 +344,7 @@ export default function Assessment({ onComplete, onNavigate }) {
     const suggestedTool = TOOL_MAP[topIndices[0]];
 
     return (
-      <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-indigo-500/10 rounded-[2.5rem] p-8 md:p-12 mt-4 opacity-100 max-w-4xl mx-auto w-full transition-all duration-500">
+      <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-indigo-500/10 rounded-[2.5rem] p-4 sm:p-8 md:p-12 mt-4 opacity-100 max-w-4xl mx-auto w-full transition-all duration-500">
         {/* Results view logic is unchanged from before, kept for component integrity */}
         <div className="mb-16">
           <div className="flex justify-between items-end mb-4">
@@ -370,7 +370,7 @@ export default function Assessment({ onComplete, onNavigate }) {
           {topIndices.map(idx => {
             const insight = INSIGHTS[idx];
             return (
-              <div key={idx} className="bg-white/60 backdrop-blur-lg border border-white p-8 rounded-[2.5rem] flex flex-col shadow-sm">
+              <div key={idx} className="bg-white/60 backdrop-blur-lg border border-white p-6 sm:p-8 rounded-[2.5rem] flex flex-col shadow-sm">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="text-4xl filter drop-shadow-sm">{insight.icon}</div>
                   <h4 className="text-xl font-black text-[#81A1C1] leading-tight">{insight.title}</h4>
@@ -381,7 +381,7 @@ export default function Assessment({ onComplete, onNavigate }) {
             );
           })}
         </div>
-        <div className="pt-8 text-center bg-white/40 border border-white/50 rounded-[3rem] p-10 shadow-sm backdrop-blur-md">
+        <div className="pt-8 text-center bg-white/40 border border-white/50 rounded-[3rem] p-4 sm:p-10 shadow-sm backdrop-blur-md">
           <h4 className="text-2xl font-extrabold text-slate-700 mb-4">Resonance Check</h4>
           <p className="text-slate-500 mb-8 max-w-lg mx-auto font-medium text-lg">Psychology is complex, and you know yourself best. Does this emotional footprint resonate with how you are feeling?</p>
           <div className="flex flex-col sm:flex-row justify-center gap-6 mb-10">
@@ -392,7 +392,7 @@ export default function Assessment({ onComplete, onNavigate }) {
           <div className={`overflow-hidden transition-all duration-500 ${resonance ? 'max-h-96 opacity-100 mb-10' : 'max-h-0 opacity-0'}`}>
             <p className="text-[#D08770] font-extrabold text-xl mb-4">Thank you for tuning in to yourself.</p>
             {!feedbackSubmitted ? (
-              <div className="max-w-lg mx-auto bg-white/60 p-6 rounded-3xl border border-white/50 shadow-sm mt-4">
+              <div className="max-w-lg mx-auto bg-white/60 p-4 sm:p-6 rounded-3xl border border-white/50 shadow-sm mt-4">
                 <p className="text-slate-600 font-bold mb-3">How can we improve this assessment?</p>
                 <textarea
                   value={feedbackText}
@@ -402,7 +402,7 @@ export default function Assessment({ onComplete, onNavigate }) {
                 ></textarea>
                 <button
                   onClick={submitFeedback}
-                  className="bg-slate-800 text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-slate-700 transition-colors w-full"
+                  className="bg-slate-800 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-slate-700 transition-colors w-full"
                 >
                   Submit Anonymous Feedback
                 </button>
@@ -441,6 +441,15 @@ export default function Assessment({ onComplete, onNavigate }) {
               ✦ Our system detected something worth exploring further. The deeper assessment uses a different psychological lens.
             </p>
           )}
+
+          {/* Beta & Accuracy Clinical Warning */}
+          <div className="mt-8 p-4 bg-amber-50/50 border border-amber-100/50 rounded-2xl max-w-lg mx-auto text-left flex gap-3 shadow-inner">
+            <span className="text-base leading-none">🚧</span>
+            <p className="text-[10px] font-medium text-slate-500 leading-relaxed">
+              <strong className="text-amber-950 font-bold block mb-0.5">Beta Phase Assessment Disclaimer</strong>
+              Unkahi is in beta testing stage. Nervous system load calculations are algorithmic approximations for educational self-reflection and coping guidance, not clinical diagnoses. Results are on-device only and may vary in accuracy.
+            </p>
+          </div>
         </div>
         <div className="mt-10 pt-8 border-t border-white/50">
           <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 text-center">Or choose your own path</p>
@@ -715,6 +724,15 @@ export default function Assessment({ onComplete, onNavigate }) {
                 <span>📊</span> View Your Data
               </button>
             )}
+          </div>
+
+          {/* Beta & Accuracy Clinical Warning */}
+          <div className="mt-8 p-4 bg-amber-50/50 border border-amber-100/50 rounded-2xl max-w-lg mx-auto text-left flex gap-3 shadow-inner">
+            <span className="text-base leading-none">🚧</span>
+            <p className="text-[10px] font-medium text-slate-500 leading-relaxed">
+              <strong className="text-amber-950 font-bold block mb-0.5">Beta Phase Assessment Disclaimer</strong>
+              Unkahi is in beta testing stage. Nervous system load calculations are algorithmic approximations for educational self-reflection and coping guidance, not clinical diagnoses. Results are on-device only and may vary in accuracy.
+            </p>
           </div>
         </div>
       </div>

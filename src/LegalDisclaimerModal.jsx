@@ -7,68 +7,55 @@ export default function LegalDisclaimerModal({ onAccept }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4 md:p-6"
+      className="fixed inset-0 z-[200] bg-slate-950/40 backdrop-blur-md flex items-center justify-center p-4"
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="bg-white/80 backdrop-blur-2xl border border-white/50 shadow-2xl rounded-[2.5rem] w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="bg-white/95 backdrop-blur-2xl border border-white/60 shadow-2xl rounded-[2.5rem] w-full max-w-md overflow-hidden flex flex-col p-6 sm:p-8 text-center relative"
       >
-        <div className="p-6 md:p-8 overflow-y-auto custom-card-scroll flex-1">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-3xl">⚠️</span>
-            <h2 className="text-2xl font-black text-slate-800 tracking-tight">Important Notice</h2>
+        <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-amber-400 via-rose-400 to-indigo-400" />
+        
+        <div className="flex flex-col items-center mb-6 mt-2">
+          <span className="text-4xl mb-3 animate-pulse">⚠️</span>
+          <h2 className="text-xl font-black text-slate-800 tracking-tight">Clinical & Privacy Notice</h2>
+          <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 mt-2">Active Telemetry Consent</span>
+        </div>
+
+        <div className="space-y-4 text-slate-600 text-xs font-semibold leading-relaxed text-left mb-8">
+          <div className="flex gap-3 items-start">
+            <span className="text-base leading-none">🚧</span>
+            <p>
+              <strong className="text-slate-800">Beta Assessment Phase:</strong> Unkahi is an experimental self-reflection tool under active development. Calculations may adjust over time.
+            </p>
           </div>
-          
-          <div className="space-y-6 text-slate-600 text-sm md:text-base font-medium">
-            <div className="bg-amber-50 border border-amber-200/50 p-5 rounded-3xl shadow-sm">
-              <h3 className="font-bold text-amber-900 mb-2 flex items-center gap-2">
-                <span>🚧</span> Beta Testing Phase
-              </h3>
-              <p className="text-amber-800/80 leading-relaxed text-sm">
-                Unkahi is currently in Beta. The platform is provided "as-is" for testing purposes. You may encounter bugs, and data may occasionally be reset. We are not liable for any damages or data loss during this phase.
-              </p>
-            </div>
-
-            <div className="bg-rose-50 border border-rose-200/50 p-5 rounded-3xl shadow-sm">
-              <h3 className="font-bold text-rose-900 mb-2 flex items-center gap-2">
-                <span>🚨</span> Not an Emergency Service
-              </h3>
-              <p className="text-rose-800/80 leading-relaxed text-sm">
-                Unkahi is an informational support tool, <strong>not a crisis intervention hotline or medical service.</strong> If you are in immediate danger or experiencing a medical emergency, please contact professional services immediately.
-                <br/><br/>
-                <strong>In India, please call: 112 (National Emergency), 1098 (Childline), or 181 (Women Helpline).</strong>
-              </p>
-            </div>
-
-            <div className="bg-slate-50 border border-slate-200/50 p-5 rounded-3xl shadow-sm">
-              <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                <span>⚖️</span> Legal & Confidentiality Limits
-              </h3>
-              <p className="text-slate-600 leading-relaxed text-sm">
-                While we strive to protect your privacy, we may be legally mandated under Indian law (including the POCSO Act) to report instances of child abuse or imminent threat to life to appropriate authorities.
-              </p>
-            </div>
-            
-            <p className="text-xs text-slate-400 italic text-center pt-2">
-              By continuing, you acknowledge that you have read and understood these terms and agree that Unkahi is not a substitute for professional medical or legal advice.
+          <div className="flex gap-3 items-start">
+            <span className="text-base leading-none">🚨</span>
+            <p>
+              <strong className="text-slate-800">Not a Crisis Service:</strong> This is a peer self-reflection tool, not a medical or emergency hotline. In immediate crisis, call <span className="text-rose-600 font-bold">112</span> or <span className="text-rose-600 font-bold">1800-599-0019</span> (KIRAN).
+            </p>
+          </div>
+          <div className="flex gap-3 items-start">
+            <span className="text-base leading-none">🔒</span>
+            <p>
+              <strong className="text-slate-800">On-Device Privacy First:</strong> Your answers are encrypted locally. However, if mandatory reporting thresholds are crossed (e.g. POCSO Act), we respect sovereign reporting compliance laws.
             </p>
           </div>
         </div>
 
-        <div className="p-4 md:p-6 bg-white/50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 items-center justify-end">
+        <div className="flex flex-col sm:flex-row gap-2.5 items-center justify-center">
           <button
             onClick={() => window.location.replace('https://www.google.com')}
-            className="w-full sm:w-auto px-6 py-3 rounded-full font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-all text-sm"
+            className="w-full sm:w-auto px-6 py-2.5 rounded-full font-bold text-slate-400 hover:text-slate-600 transition-all text-xs"
           >
             Leave Site
           </button>
           <button
             onClick={onAccept}
-            className="w-full sm:w-auto px-8 py-3 rounded-full bg-slate-800 hover:bg-slate-700 text-white font-bold shadow-lg shadow-slate-800/20 transition-all text-sm flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-8 py-3 rounded-full bg-slate-800 hover:bg-slate-700 text-white font-bold shadow-lg shadow-slate-800/10 transition-all text-xs flex items-center justify-center gap-1.5"
           >
-            I Understand & Agree <span className="text-lg">→</span>
+            Accept & Enter <span>→</span>
           </button>
         </div>
       </motion.div>

@@ -89,8 +89,8 @@ export default function B2BSignup({ onBack }) {
 
       <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-stretch">
         
-        {/* Features Column (Hidden on very small screens, visible on md and up) */}
-        <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-8 md:p-12 rounded-[3rem] shadow-2xl relative overflow-hidden flex-col justify-center hidden md:flex border border-slate-800">
+        {/* Features Column (Visible on all screens, stacked on mobile) */}
+        <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-8 md:p-12 rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col justify-center border border-slate-800">
           {/* Background decorations */}
           <div className="absolute -top-32 -right-32 w-80 h-80 bg-indigo-500/20 rounded-full blur-[80px]" />
           <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-teal-500/10 rounded-full blur-[80px]" />

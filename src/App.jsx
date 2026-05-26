@@ -276,52 +276,60 @@ function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center p-6 text-center"
+            className="fixed inset-0 z-[100] bg-slate-950 overflow-y-auto flex flex-col items-center justify-start py-8 px-4 md:px-6 text-center"
           >
-            <button
-              onClick={() => setSosActive(false)}
-              className="absolute top-8 left-8 text-slate-500 hover:text-slate-300 font-bold tracking-widest uppercase text-sm"
-            >
-              ← Close
-            </button>
-            <motion.div
-              animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-              className="w-48 h-48 rounded-full bg-indigo-500/20 blur-xl absolute"
-            />
-            <h2 className="text-3xl md:text-5xl font-black text-slate-200 mb-6 relative z-10">TIPP Emergency Protocol</h2>
-            <p className="text-lg text-slate-400 font-medium max-w-md relative z-10 mb-8">
-              Your nervous system is overwhelmed. Do one of these right now to reset.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg relative z-10 mb-8 text-left">
-              <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300">
-                <span className="text-blue-400 font-bold block mb-1">❄️ Temperature</span>
-                <span className="text-sm">Hold an ice cube or splash cold water on your face.</span>
-              </div>
-              <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300">
-                <span className="text-rose-400 font-bold block mb-1">🏃‍♂️ Intense Exercise</span>
-                <span className="text-sm">Do 20 jumping jacks or sprint in place for 30 seconds.</span>
-              </div>
-              <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300">
-                <span className="text-emerald-400 font-bold block mb-1">🫁 Paced Breathing</span>
-                <span className="text-sm">Breathe in for 4, hold for 7, out for 8.</span>
-              </div>
-              <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl text-slate-300">
-                <span className="text-indigo-400 font-bold block mb-1">🧘 Paired Relaxation</span>
-                <span className="text-sm">Tense your hands and feet tight, then release fully.</span>
+            {/* Top Navigation Row */}
+            <div className="w-full max-w-lg flex items-center justify-between mb-8 md:mb-12 relative z-20">
+              <button
+                onClick={() => setSosActive(false)}
+                className="flex items-center gap-2 text-slate-400 hover:text-slate-200 font-bold tracking-widest uppercase text-xs bg-slate-900/80 border border-slate-800 px-4 py-2 rounded-full transition-all duration-300 shadow-md"
+              >
+                <span>←</span> Close
+              </button>
+              <div className="flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/30 px-3 py-1 rounded-full text-rose-500 text-[10px] font-black uppercase tracking-widest animate-pulse">
+                <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                Active Triage
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 relative z-10 w-full max-w-lg justify-center">
+            <motion.div
+              animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+              className="w-48 h-48 rounded-full bg-indigo-500/20 blur-xl absolute top-12"
+            />
+            <h2 className="text-3xl md:text-5xl font-black text-slate-200 mb-4 relative z-10 tracking-tight">TIPP Emergency Protocol</h2>
+            <p className="text-sm md:text-lg text-slate-400 font-medium max-w-md relative z-10 mb-8 px-2 leading-relaxed">
+              Your nervous system is overwhelmed. Do one of these right now to reset.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg relative z-10 mb-8 text-left">
+              <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl text-slate-300 shadow-lg">
+                <span className="text-blue-400 font-bold block mb-1">❄️ Temperature</span>
+                <span className="text-xs leading-relaxed text-slate-400">Hold an ice cube or splash cold water on your face.</span>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl text-slate-300 shadow-lg">
+                <span className="text-rose-400 font-bold block mb-1">🏃‍♂️ Intense Exercise</span>
+                <span className="text-xs leading-relaxed text-slate-400">Do 20 jumping jacks or sprint in place for 30 seconds.</span>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl text-slate-300 shadow-lg">
+                <span className="text-emerald-400 font-bold block mb-1">🫁 Paced Breathing</span>
+                <span className="text-xs leading-relaxed text-slate-400">Breathe in for 4, hold for 7, out for 8.</span>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl text-slate-300 shadow-lg">
+                <span className="text-indigo-400 font-bold block mb-1">🧘 Paired Relaxation</span>
+                <span className="text-xs leading-relaxed text-slate-400">Tense your hands and feet tight, then release fully.</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 relative z-10 w-full max-w-lg justify-center mb-8">
               <a
                 href="tel:18005990019"
-                className="bg-rose-600 hover:bg-rose-500 text-white font-black py-4 px-6 rounded-full shadow-[0_0_20px_rgba(225,29,72,0.4)] transition-all flex items-center justify-center gap-2"
+                className="bg-rose-600 hover:bg-rose-500 text-white font-black py-4 px-6 rounded-full shadow-[0_0_20px_rgba(225,29,72,0.4)] transition-all flex items-center justify-center gap-2 text-sm uppercase tracking-wider"
               >
                 <span className="text-xl animate-pulse">📞</span> KIRAN (1800-599-0019)
               </a>
               <button
                 onClick={() => { setSosActive(false); handleNavigate('safetyplan'); }}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 font-black py-4 px-6 rounded-full transition-all flex items-center justify-center gap-2"
+                className="bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-700 font-black py-4 px-6 rounded-full transition-all flex items-center justify-center gap-2 text-sm uppercase tracking-wider"
               >
                 <span className="text-xl">🛡️</span> View My Safety Plan
               </button>

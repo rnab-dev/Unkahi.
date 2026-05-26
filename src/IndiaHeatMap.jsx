@@ -38,7 +38,7 @@ export default function IndiaHeatMap({ regionData }) {
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto pr-2 pb-4 relative z-10" style={{ maxHeight: '400px' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto pr-2 pb-4 relative z-10" style={{ maxHeight: '400px' }}>
         {nodes.map((node, i) => {
           let color = "bg-emerald-500";
           let textColor = "text-emerald-300";
@@ -60,30 +60,29 @@ export default function IndiaHeatMap({ regionData }) {
             textColor = "text-yellow-200"; 
             status = "MODERATE"; 
           }
-
+ 
           return (
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: Math.min(i * 0.05, 0.5) }} // Cap delay so it loads fast
               key={node.region} 
-              className="bg-slate-800/80 backdrop-blur border border-slate-700/50 p-4 md:p-5 rounded-2xl flex flex-col items-center justify-center text-center relative group hover:border-slate-600 transition-colors"
+              className="bg-slate-800/80 backdrop-blur border border-slate-700/50 p-5 rounded-2xl flex flex-col items-center justify-center text-center relative group hover:border-slate-600 transition-colors"
             >
               {/* Blinking indicator dot */}
-              <div className={`absolute top-3 right-3 w-2.5 h-2.5 rounded-full ${color} ${glow}`} />
+              <div className={`absolute top-4 right-4 w-2.5 h-2.5 rounded-full ${color} ${glow}`} />
               
-              <h4 className="text-white font-bold text-xs md:text-sm truncate w-full mb-1 pr-6">{node.region}</h4>
-              <p className={`text-[9px] font-black tracking-widest ${textColor} mb-3 md:mb-4 uppercase`}>{status}</p>
+              <h4 className="text-white font-bold text-sm md:text-base mb-1 w-full truncate px-3">{node.region}</h4>
+              <p className={`text-[9px] font-black tracking-widest ${textColor} mb-3 uppercase`}>{status}</p>
               
-              <div className="flex gap-4 md:gap-6 w-full justify-center bg-slate-900/50 rounded-xl py-2">
-                <div className="text-center">
+              <div className="grid grid-cols-2 divide-x divide-slate-700/60 w-full bg-slate-900/50 rounded-xl py-2 mt-1">
+                <div className="text-center px-1">
                   <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Load</p>
-                  <p className="text-base md:text-xl font-black text-white">{node.avgScore}%</p>
+                  <p className="text-base md:text-lg font-black text-white">{node.avgScore}%</p>
                 </div>
-                <div className="w-px bg-slate-700/50 h-full"></div>
-                <div className="text-center">
+                <div className="text-center px-1">
                   <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Logs</p>
-                  <p className="text-base md:text-xl font-black text-slate-400">{node.count}</p>
+                  <p className="text-base md:text-lg font-black text-slate-400">{node.count}</p>
                 </div>
               </div>
             </motion.div>

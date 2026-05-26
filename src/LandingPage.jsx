@@ -4,10 +4,10 @@ import { fetchClinicalPillars } from './utils/supabaseSync';
 import { supabase } from './supabaseClient';
 
 const DEFAULT_PILLARS = [
-  { title: 'Intrusive Guilt', icon: '⚖️', desc: 'Carrying blame for things outside your control as a way to feel in control of uncontrollable pain.', tip: 'Use the "Let Go Box" to physically release a blame story.' },
-  { title: 'Hypervigilance', icon: '👁️', desc: 'Your nervous system is on high alert, constantly scanning for danger. A brilliant survival mechanism that consumes energy.', tip: 'Try the Breathing Room to signal safety.' },
-  { title: 'Boundary Collapse', icon: '🫂', desc: 'Over-accommodating others to keep the peace when asserting needs felt risky in the past.', tip: 'Practice saying "I need a moment to think".' },
-  { title: 'Somatic Disconnect', icon: '🧊', desc: 'Feeling numb or floaty. This is your nervous system providing a protective buffer against overwhelming sensations.', tip: 'Use the Grounding Matrix.' }
+  { title: 'Intrusive Guilt', response: 'Self-Blame / Fawn', icon: '⚖️', desc: 'Carrying blame for things outside your control as a way to feel in control of uncontrollable pain.', tip: 'Use the "Let Go Box" to physically release a blame story.' },
+  { title: 'Hypervigilance', response: 'Fight / Flight', icon: '👁️', desc: 'Your nervous system is on high alert, constantly scanning for danger. A brilliant survival mechanism that consumes energy.', tip: 'Try the Breathing Room to signal safety.' },
+  { title: 'Boundary Collapse', response: 'Fawn / Pleasing', icon: '🫂', desc: 'Over-accommodating others to keep the peace when asserting needs felt risky in the past.', tip: 'Practice saying "I need a moment to think".' },
+  { title: 'Somatic Disconnect', response: 'Freeze / Numbness', icon: '🧊', desc: 'Feeling numb or floaty. This is your nervous system providing a protective buffer against overwhelming sensations.', tip: 'Use the Grounding Matrix.' }
 ];
 
 const SHUFFLE_WORDS = ['word.', 'sentence.', 'syllable.', 'thing.', 'sound.'];
@@ -16,6 +16,7 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
   const [pillars, setPillars] = useState(DEFAULT_PILLARS);
   const [wordIndex, setWordIndex] = useState(0);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [activePricingTab, setActivePricingTab] = useState('pro');
 
   useEffect(() => {
     // Silently check if an admin session is currently active
@@ -196,21 +197,11 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
         </div>
 
         {/* Detailed Project Insights & Clinical Blueprint */}
-        <motion.div 
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="w-full relative z-10 mb-24 px-4 md:px-0"
-        >
+        <div className="w-full relative z-10 mb-24 px-4 md:px-0">
           {/* Ambient Glow behind the section */}
-          <div className="absolute inset-0 bg-gradient-to-b from-indigo-100/20 via-purple-100/20 to-teal-100/20 blur-3xl -z-10 rounded-[4rem]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-indigo-50/50 via-purple-50/50 to-teal-50/50 -z-10 rounded-[4rem]" />
           
-          <div className="bg-white/40 backdrop-blur-xl rounded-[3rem] border border-white/60 p-8 md:p-16 shadow-[0_8px_32px_rgba(31,38,135,0.05)] overflow-hidden relative">
-            {/* Decorative Top Left Blob */}
-            <div className="absolute -top-24 -left-24 w-64 h-64 bg-teal-300/20 rounded-full blur-[60px] pointer-events-none" />
-            {/* Decorative Bottom Right Blob */}
-            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-purple-300/20 rounded-full blur-[60px] pointer-events-none" />
+          <div className="bg-white rounded-[3rem] border border-slate-100 p-8 md:p-16 shadow-sm overflow-hidden relative">
 
             <h3 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-500 mb-8 text-center tracking-tight">
               About the Project
@@ -222,10 +213,67 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
               <span className="text-4xl absolute -bottom-8 -right-4 text-slate-200 pointer-events-none">"</span>
             </p>
 
-            <div className="flex items-center justify-center gap-4 mb-12">
-              <div className="h-px w-12 bg-gradient-to-r from-transparent to-slate-300" />
-              <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Core Clinical Pillars</h3>
-              <div className="h-px w-12 bg-gradient-to-l from-transparent to-slate-300" />
+            {/* Visual 3-Step Journey */}
+            <div className="mb-20">
+              <div className="flex items-center justify-center gap-3 md:gap-4 mb-12 px-2 w-full">
+                <div className="h-px flex-1 max-w-[3rem] md:max-w-[4rem] bg-gradient-to-r from-transparent to-slate-300" />
+                <h3 className="text-xs md:text-sm font-black text-slate-400 uppercase tracking-widest md:tracking-[0.3em] whitespace-nowrap text-center">
+                  How it works
+                </h3>
+                <div className="h-px flex-1 max-w-[3rem] md:max-w-[4rem] bg-gradient-to-l from-transparent to-slate-300" />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                {/* Step 1 */}
+                <div className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 flex flex-col items-center text-center">
+                  <div className="w-12 h-12 bg-teal-100 text-teal-700 font-black rounded-full flex items-center justify-center text-sm mb-4 shadow-inner">
+                    1
+                  </div>
+                  <h4 className="text-lg font-black text-slate-800 mb-2">Map Your Day</h4>
+                  <p className="text-slate-500 text-xs leading-relaxed font-medium">
+                    Spend 3 minutes answering gentle, non-invasive questions about your sleep cycles, energy spikes, and bodily reactions. Zero pressure, zero reliving of past memories.
+                  </p>
+                </div>
+
+                {/* Step 2 */}
+                <div className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 flex flex-col items-center text-center">
+                  <div className="w-12 h-12 bg-indigo-100 text-indigo-700 font-black rounded-full flex items-center justify-center text-sm mb-4 shadow-inner">
+                    2
+                  </div>
+                  <h4 className="text-lg font-black text-slate-800 mb-2">Decode Your State</h4>
+                  <p className="text-slate-500 text-xs leading-relaxed font-medium">
+                    Our local-first, zero-knowledge algorithm maps your somatic telemetry to identify if your body is operating in a state of Fight, Flight, Freeze, or Fawn.
+                  </p>
+                </div>
+
+                {/* Step 3 */}
+                <div className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 flex flex-col items-center text-center">
+                  <div className="w-12 h-12 bg-rose-100 text-rose-700 font-black rounded-full flex items-center justify-center text-sm mb-4 shadow-inner">
+                    3
+                  </div>
+                  <h4 className="text-lg font-black text-slate-800 mb-2">Regulate Safely</h4>
+                  <p className="text-slate-500 text-xs leading-relaxed font-medium">
+                    Get custom-matched interactive somatic tools like the Breathing Room or Let Go Box, designed specifically to bring your nervous system back to safety.
+                  </p>
+                </div>
+              </div>
+
+              {/* B2B / Enterprise Privacy Promise */}
+              <div className="max-w-xl mx-auto mt-8 p-4 bg-indigo-50/40 rounded-2xl border border-indigo-100/50 flex gap-3 text-left">
+                <span className="text-lg leading-none">🔒</span>
+                <p className="text-[11px] font-medium text-slate-500 leading-relaxed">
+                  <strong className="text-indigo-950 font-bold block mb-0.5">Enterprise-Grade Confidentiality</strong>
+                  Your answers never leave your browser. Only anonymous, high-level percentages (e.g. general group stress trends) are shown to cohort managers, guaranteeing your personal privacy.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center gap-3 md:gap-4 mb-12 px-2 w-full">
+              <div className="h-px flex-1 max-w-[3rem] md:max-w-[4rem] bg-gradient-to-r from-transparent to-slate-300" />
+              <h3 className="text-xs md:text-sm font-black text-slate-400 uppercase tracking-widest md:tracking-[0.3em] whitespace-nowrap text-center">
+                Core Clinical Pillars
+              </h3>
+              <div className="h-px flex-1 max-w-[3rem] md:max-w-[4rem] bg-gradient-to-l from-transparent to-slate-300" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 relative z-10">
@@ -241,44 +289,41 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
                 const borderC = accentBorderColors[idx % accentBorderColors.length];
 
                 return (
-                  <motion.div 
+                  <div 
                     key={idx} 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: idx * 0.1 }}
-                    whileHover={{ y: -8, scale: 1.02 }}
-                    className="group relative bg-white/70 backdrop-blur-md border border-white/80 p-8 rounded-[2.5rem] flex flex-col shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-300 z-10"
+                    className="relative bg-white border border-slate-100 p-8 rounded-[2.5rem] flex flex-col shadow-sm z-10"
                   >
-                    {/* Hover Glow Behind Card */}
-                    <div className={`absolute inset-0 rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl -z-10 ${glow}`} />
-                    
                     <div className="flex items-start gap-5 mb-5">
-                      <div className="text-4xl md:text-5xl drop-shadow-md group-hover:scale-110 transition-transform duration-300 origin-bottom-left">
+                      <div className="text-4xl md:text-5xl drop-shadow-sm">
                         {pillar.icon}
                       </div>
-                      <h4 className="text-xl md:text-2xl font-black text-slate-700 leading-tight mt-1 group-hover:text-slate-900 transition-colors">
-                        {pillar.title}
-                      </h4>
+                      <div>
+                        <span className={`inline-block text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded bg-slate-100 ${tColor} mb-1.5`}>
+                          {pillar.response || 'Somatic Response'}
+                        </span>
+                        <h4 className="text-xl md:text-2xl font-black text-slate-700 leading-tight">
+                          {pillar.title}
+                        </h4>
+                      </div>
                     </div>
                     
                     <p className="text-slate-600 mb-8 leading-relaxed font-medium flex-grow text-sm md:text-base">
                       {pillar.desc}
                     </p>
                     
-                    <div className={`mt-auto rounded-2xl p-5 border ${bColor} ${borderC} group-hover:bg-white transition-colors duration-300 shadow-inner group-hover:shadow-sm`}>
+                    <div className={`mt-auto rounded-2xl p-5 border ${bColor} ${borderC} shadow-inner`}>
                       <p className={`text-[10px] font-black uppercase tracking-widest mb-1.5 flex items-center gap-2 ${tColor}`}>
-                        <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-current" />
                         Actionable Tip
                       </p>
                       <p className="text-sm text-slate-800 font-bold leading-snug">{pillar.tip}</p>
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Enterprise Pricing Section */}
         <div className="w-full max-w-5xl mx-auto mb-24 px-4">
@@ -287,10 +332,41 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
             <p className="text-slate-600 font-medium max-w-2xl mx-auto">Zero-knowledge telemetry and enterprise-grade isolation. Deploy Unkahi to your cohort today.</p>
           </div>
 
+          {/* Mobile Pricing Tab Switcher */}
+          <div className="flex justify-center md:hidden mb-8 px-2">
+            <div className="inline-flex p-1 bg-slate-100/80 backdrop-blur-md rounded-full border border-slate-200/50 shadow-inner relative w-full sm:w-auto justify-between">
+              {[
+                { id: 'individual', label: 'Individual' },
+                { id: 'pro', label: 'Pro Clinic' },
+                { id: 'enterprise', label: 'Enterprise' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActivePricingTab(tab.id)}
+                  className={`relative flex-1 sm:flex-none px-3 sm:px-4 py-2.5 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-full transition-colors duration-300 z-10 outline-none ${
+                    activePricingTab === tab.id
+                      ? (tab.id === 'pro' ? 'text-white' : 'text-slate-800')
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  {activePricingTab === tab.id && (
+                    <motion.div
+                      layoutId="pricingTabActive"
+                      className={`absolute inset-0 rounded-full shadow-sm -z-10 ${tab.id === 'pro' ? 'bg-indigo-600' : 'bg-white border border-slate-200/30'}`}
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  <span className="relative z-20 whitespace-nowrap">{tab.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
 
             {/* Tier 1 */}
-            <div className="bg-white/40 backdrop-blur-md border border-slate-200/50 rounded-3xl p-8 shadow-sm flex flex-col">
+            <div className={`${activePricingTab === 'individual' ? 'flex' : 'hidden'} md:flex bg-white/40 backdrop-blur-md border border-slate-200/50 rounded-3xl p-8 shadow-sm flex-col`}>
               <span className="text-sm font-black uppercase tracking-widest text-slate-400 mb-2 block">Individual</span>
               <h4 className="text-4xl font-black text-slate-800 mb-2">₹0<span className="text-sm font-medium text-slate-500">/forever</span></h4>
               <p className="text-slate-500 text-sm mb-6 pb-6 border-b border-slate-200/50">For personal healing and grounding.</p>
@@ -303,7 +379,7 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
             </div>
 
             {/* Tier 2: Pro */}
-            <div className="bg-gradient-to-b from-indigo-500 to-indigo-700 border border-indigo-400 rounded-3xl p-8 shadow-xl flex flex-col relative transform md:-translate-y-4">
+            <div className={`${activePricingTab === 'pro' ? 'flex' : 'hidden'} md:flex bg-gradient-to-b from-indigo-500 to-indigo-700 border border-indigo-400 rounded-3xl p-8 shadow-xl flex-col relative transform md:-translate-y-4`}>
               <div className="absolute top-0 right-8 -translate-y-1/2 bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-md">Most Popular</div>
               <span className="text-sm font-black uppercase tracking-widest text-indigo-200 mb-2 block">Pro Clinic</span>
               <h4 className="text-4xl font-black text-white mb-2">₹4,999<span className="text-sm font-medium text-indigo-300">/mo</span></h4>
@@ -317,7 +393,7 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
             </div>
 
             {/* Tier 3 */}
-            <div className="bg-white/40 backdrop-blur-md border border-slate-200/50 rounded-3xl p-8 shadow-sm flex flex-col">
+            <div className={`${activePricingTab === 'enterprise' ? 'flex' : 'hidden'} md:flex bg-white/40 backdrop-blur-md border border-slate-200/50 rounded-3xl p-8 shadow-sm flex-col`}>
               <span className="text-sm font-black uppercase tracking-widest text-slate-400 mb-2 block">Enterprise B2B</span>
               <h4 className="text-4xl font-black text-slate-800 mb-2">₹19,999<span className="text-sm font-medium text-slate-500">/mo</span></h4>
               <p className="text-slate-500 text-sm mb-6 pb-6 border-b border-slate-200/50">For universities and massive organizations.</p>
