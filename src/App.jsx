@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AdminPanel from './AdminPanel';
 import B2BSignup from './B2BSignup';
 import LegalDisclaimerModal from './LegalDisclaimerModal';
+import AdvancedCanvas from './AdvancedCanvas';
 
 function App() {
   const [currentView, setCurrentView] = useState('welcome');
@@ -256,6 +257,11 @@ function App() {
       <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
         <B2BSignup onBack={() => handleNavigate('welcome')} />
       </div>
+    ),
+    feelingcanvas: () => (
+      <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+        <AdvancedCanvas onBack={() => handleNavigate('welcome')} onNavigateTool={handleNavigate} />
+      </div>
     )
   };
 
@@ -466,6 +472,10 @@ const FloatingToolsMenu = ({ onNavigate }) => {
             <button onClick={() => { setIsOpen(false); onNavigate('vault'); }} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 rounded-2xl transition-colors text-left group">
               <span className="text-xl group-hover:scale-110 transition-transform">✨</span>
               <span className="text-sm font-bold text-slate-700">Safe Vault</span>
+            </button>
+            <button onClick={() => { setIsOpen(false); onNavigate('feelingcanvas'); }} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 rounded-2xl transition-colors text-left group">
+              <span className="text-xl group-hover:scale-110 transition-transform">🎨</span>
+              <span className="text-sm font-bold text-slate-700">Feeling Canvas</span>
             </button>
 
             {safeContacts.length > 0 && (
