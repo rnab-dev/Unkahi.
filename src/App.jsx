@@ -60,6 +60,32 @@ function App() {
     }, 400); // Cross-fade duration
   };
 
+  // Dynamic SPA SEO Title Engine
+  useEffect(() => {
+    const titles = {
+      welcome: "Unkahi | Interactive Psychological Safety & Somatic Healing",
+      assessment: "Somatic Load Assessment | Unkahi",
+      dashboard: "My Telemetry Dashboard - Insights | Unkahi",
+      mydata: "My Telemetry Dashboard - Insights | Unkahi",
+      breathe: "Blooming Lotus Paced Breathing Reset | Unkahi",
+      ground: "Grounding Matrix Sensory Anchors | Unkahi",
+      letgo: "Burn After Reading Journal Release | Unkahi",
+      emdr: "Binaural EMDR Bilateral Stimulation | Unkahi",
+      somatic: "Somatic Muscle Tense & Release | Unkahi",
+      kids: "Little Unkahi - Brave Bear Boundaries | Unkahi",
+      support: "Crisis Helpline Emergency Directory | Unkahi",
+      safetyplan: "My Private Crisis Safety Plan | Unkahi",
+      mooddiary: "Local Mood Tracker & Diary Cards | Unkahi",
+      psychoed: "Nervous System Psychoeducation Library | Unkahi",
+      vault: "Safe Gratitude Vault & Positives | Unkahi",
+      feelingcanvas: "Advanced Feeling Paint Canvas | Unkahi",
+      b2bsignup: "Apply for Cohort Analytics SaaS | Unkahi",
+      admin: "Central Command Admin Console | Unkahi"
+    };
+    
+    document.title = titles[currentView] || "Unkahi | Understood Without A Single Word";
+  }, [currentView]);
+
 
   const renderToolsConfig = () => (
     <div className={`mx-auto max-w-2xl w-full p-8 md:p-12 text-center relative bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-indigo-500/10 rounded-[2.5rem] transition-all duration-500 ease-out ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
