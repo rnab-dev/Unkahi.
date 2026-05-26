@@ -4,111 +4,134 @@ import { supabase } from './supabaseClient';
 import { useLocalNLP } from './hooks/useLocalNLP';
 
 export function BreathingRoom({ onBack }) {
-  const [phase, setPhase] = useState('Breathe In'); 
-  const [scale, setScale] = useState(1);
-  const [color, setColor] = useState('rgba(122, 158, 158, 0.4)'); // Teal
+  const [phase, setPhase] = useState('Breathe In');
+  const [cycleIndex, setCycleIndex] = useState(0);
+
+  // 4-7-8 Breathing Cycle
+  const breathingVariants = {
+    inhale: {
+      scale: 1.8,
+      backgroundColor: "rgba(236, 72, 153, 0.4)", // soft pink
+      boxShadow: "0 0 80px rgba(236, 72, 153, 0.6)",
+      transition: { duration: 4, ease: "easeInOut" }
+    },
+    hold: {
+      scale: 1.8,
+      backgroundColor: "rgba(168, 85, 247, 0.4)", // lotus purple
+      boxShadow: "0 0 60px rgba(168, 85, 247, 0.5)",
+      transition: { duration: 7, ease: "linear" }
+    },
+    exhale: {
+      scale: 1,
+      backgroundColor: "rgba(129, 161, 193, 0.4)", // calming blue
+      boxShadow: "0 0 30px rgba(129, 161, 193, 0.3)",
+      transition: { duration: 8, ease: "easeInOut" }
+    }
+  };
 
   useEffect(() => {
-    let timer;
-    const breatheCycle = () => {
-      setPhase('Inhale (4s)');
-      setScale(1.5);
-      setColor('rgba(236, 72, 153, 0.6)'); // Soft pink
-      timer = setTimeout(() => {
+    let currentPhase = 'inhale';
+    let timeout;
+
+    const runCycle = () => {
+      if (currentPhase === 'inhale') {
+        setPhase('Inhale (4s)');
+        setCycleIndex(1); // triggers 'inhale' variant
+        timeout = setTimeout(() => {
+          currentPhase = 'hold';
+          runCycle();
+        }, 4000);
+      } else if (currentPhase === 'hold') {
         setPhase('Hold (7s)');
-        setColor('rgba(168, 85, 247, 0.5)'); // Deep lotus purple
-        timer = setTimeout(() => {
-          setPhase('Exhale (8s)');
-          setScale(1);
-          setColor('rgba(129, 161, 193, 0.6)'); // Blue
-          timer = setTimeout(breatheCycle, 8000); 
-        }, 7000); 
-      }, 4000); 
+        setCycleIndex(2); // triggers 'hold' variant
+        timeout = setTimeout(() => {
+          currentPhase = 'exhale';
+          runCycle();
+        }, 7000);
+      } else if (currentPhase === 'exhale') {
+        setPhase('Exhale (8s)');
+        setCycleIndex(3); // triggers 'exhale' variant
+        timeout = setTimeout(() => {
+          currentPhase = 'inhale';
+          runCycle();
+        }, 8000);
+      }
     };
-    breatheCycle();
-    return () => clearTimeout(timer);
+
+    // start slightly after mount for smooth entry
+    timeout = setTimeout(runCycle, 1000);
+
+    return () => clearTimeout(timeout);
   }, []);
 
+  const getVariant = () => {
+    if (cycleIndex === 1) return 'inhale';
+    if (cycleIndex === 2) return 'hold';
+    if (cycleIndex === 3) return 'exhale';
+    return 'exhale'; // default
+  };
+
   return (
-    <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-pink-500/10 rounded-[3rem] px-6 py-10 sm:px-12 sm:pt-10 sm:pb-16 mt-6 sm:mt-10 max-w-2xl mx-auto flex flex-col items-center w-full overflow-hidden transform-gpu">
-      {/* 1. Strict Toolbar Header (Isolated) */}
-      <div className="flex items-start justify-start w-full">
-        <button onClick={onBack} className="text-slate-400 hover:text-pink-400 font-bold uppercase tracking-widest text-xs transition-colors mb-6 sm:mb-8">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
+      className="bg-white/40 backdrop-blur-xl border border-white/50 shadow-2xl shadow-pink-500/10 rounded-[3rem] px-6 py-10 sm:px-12 sm:pt-10 sm:pb-16 mt-6 sm:mt-10 max-w-2xl mx-auto flex flex-col items-center w-full overflow-hidden"
+    >
+      <div className="flex items-start justify-start w-full relative z-10">
+        <button onClick={onBack} className="text-slate-500 hover:text-pink-500 font-bold uppercase tracking-widest text-xs transition-colors mb-6 sm:mb-8 bg-white/50 px-4 py-2 rounded-full backdrop-blur-md">
           ← Return
         </button>
       </div>
-      
-      {/* 2. Isolated Centered Title Contaner */}
-      <div className="flex flex-col items-center justify-center text-center w-full pb-10">
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-pink-600 tracking-tight">The Blooming Lotus</h2>
-        <p className="text-slate-500 mt-4 text-lg font-medium max-w-md">
+
+      <div className="flex flex-col items-center justify-center text-center w-full pb-16 relative z-10">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-pink-600 tracking-tight drop-shadow-sm">The Blooming Lotus</h2>
+        <p className="text-slate-600 mt-4 text-lg font-medium max-w-md">
           Follow the soft expansion of the petals to reset your vagus nerve.
         </p>
       </div>
 
-      {/* Visual Canvas */}
-      <div className="relative w-[min(78vw,20rem)] sm:w-[20rem] aspect-square flex items-center justify-center mb-10 transform-gpu mx-auto">
-        <div className="absolute inset-0 rounded-full bg-pink-200/30 blur-3xl transform-gpu" style={{ opacity: scale > 1 ? 0.7 : 0.35, transition: 'opacity 4000ms cubic-bezier(0.4, 0, 0.2, 1)' }} />
+      <div className="relative w-48 h-48 sm:w-64 sm:h-64 flex items-center justify-center mb-24 mx-auto">
+        {/* Core Animated Breathing Orb */}
+        <motion.div
+          variants={breathingVariants}
+          animate={getVariant()}
+          className="absolute inset-0 rounded-full mix-blend-multiply blur-md"
+          style={{
+            background: "rgba(129, 161, 193, 0.4)",
+            boxShadow: "0 0 30px rgba(129, 161, 193, 0.3)"
+          }}
+        />
+        <motion.div
+          variants={breathingVariants}
+          animate={getVariant()}
+          className="absolute inset-4 rounded-full border-2 border-white/50"
+          style={{ opacity: 0.5 }}
+        />
+        <motion.div
+          variants={breathingVariants}
+          animate={getVariant()}
+          className="absolute inset-8 rounded-full border border-white/30"
+          style={{ opacity: 0.3 }}
+        />
 
-        {/* Concentric Rings Canvas */}
-        <div className="relative w-full h-full flex items-center justify-center">
-          {/* Outer Ring */}
-          <div 
-            className="absolute rounded-full border-2 border-pink-300/40 transform-gpu will-change-transform"
-            style={{
-              width: '100%',
-              height: '100%',
-              transform: `scale(${scale > 1 ? 1.0 : 0.5}) translateZ(0)`,
-              opacity: scale > 1 ? 0.8 : 0.2,
-              transition: 'transform 4000ms cubic-bezier(0.4, 0, 0.2, 1), opacity 4000ms cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-          />
-          
-          {/* Middle Ring */}
-          <div 
-            className="absolute rounded-full border-[3px] border-pink-400/50 transform-gpu will-change-transform"
-            style={{
-              width: '75%',
-              height: '75%',
-              transform: `scale(${scale > 1 ? 1.0 : 0.6}) translateZ(0)`,
-              opacity: scale > 1 ? 0.9 : 0.3,
-              transition: 'transform 4000ms cubic-bezier(0.4, 0, 0.2, 1), opacity 4000ms cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-          />
-          
-          {/* Inner Ring */}
-          <div 
-            className="absolute rounded-full border-4 border-pink-500/60 transform-gpu will-change-transform"
-            style={{
-              width: '50%',
-              height: '50%',
-              transform: `scale(${scale > 1 ? 1.0 : 0.7}) translateZ(0)`,
-              opacity: scale > 1 ? 1 : 0.4,
-              transition: 'transform 4000ms cubic-bezier(0.4, 0, 0.2, 1), opacity 4000ms cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-          />
-          
-          {/* Core Pulsing Center */}
-          <div 
-            className="absolute rounded-full shadow-[0_0_40px_rgba(236,72,153,0.5)] transform-gpu will-change-transform"
-            style={{
-              width: '25%',
-              height: '25%',
-              backgroundColor: color,
-              transform: `scale(${scale > 1 ? 1.2 : 0.9}) translateZ(0)`,
-              transition: 'transform 4000ms cubic-bezier(0.4, 0, 0.2, 1), background-color 4000ms ease-in-out'
-            }}
-          />
+        {/* Center label */}
+        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+          <AnimatePresence mode="popLayout">
+            <motion.div
+              key={phase}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.2 }}
+              transition={{ duration: 0.5 }}
+              className="bg-white/80 backdrop-blur-xl border border-white/70 shadow-lg rounded-full px-8 py-4"
+            >
+              <span className="text-2xl font-black text-slate-700 tracking-wide">{phase}</span>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
-
-      {/* Button Phase Centered Below Text & Visual */}
-      <div className="w-full flex items-center justify-center transform-gpu">
-        <div className="bg-white/80 backdrop-blur-xl border border-white/70 shadow-sm rounded-full px-8 py-4">
-          <div className="text-xl font-bold text-slate-700 tracking-wide">{phase}</div>
-        </div>
-      </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -143,12 +166,12 @@ export function GroundingMatrix({ onBack }) {
           Click each soft glass to firmly anchor yourself back into reality.
         </p>
       </div>
-      
+
       <div className="grid grid-cols-1 gap-6 w-full max-w-xl">
         {matrixItems.map((item, idx) => {
           const isPressed = activeList.includes(idx);
           return (
-            <button 
+            <button
               key={idx}
               onClick={() => toggleItem(idx)}
               className={`w-full text-left p-6 rounded-2xl flex items-center gap-6 transition-all duration-300 ease-out cursor-pointer border transform-gpu will-change-transform ${isPressed ? 'bg-white/40 border-white/30 shadow-inner scale-100' : 'bg-white/80 border-white shadow-sm hover:shadow-md hover:scale-[1.02]'}`}
@@ -173,7 +196,7 @@ export function LetGoBox({ onBack }) {
   const [isReleasing, setIsReleasing] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
-  
+
   // Real-time NLP
   const { analyzeText } = useLocalNLP();
   const [startWeight, setStartWeight] = useState(null);
@@ -225,11 +248,11 @@ export function LetGoBox({ onBack }) {
   const handleRelease = async () => {
     if (!text.trim()) return;
     setIsReleasing(true);
-    
+
     // Calculate final weight before burning
     const finalRes = await analyzeText(text);
     const endWeight = finalRes ? finalRes.emotionalWeight : 0;
-    
+
     // Abstract telemetry: Log the emotional shift, NEVER the text.
     try {
       await supabase.from('ml_telemetry').insert([{
@@ -249,7 +272,7 @@ export function LetGoBox({ onBack }) {
 
   return (
     <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-indigo-500/10 rounded-[3rem] px-6 py-10 sm:px-12 sm:pt-10 sm:pb-16 mt-6 sm:mt-10 max-w-2xl w-full mx-auto flex flex-col items-center transform-gpu relative overflow-hidden">
-      
+
       {/* Cinematic Fire Glow on Release */}
       <AnimatePresence>
         {isReleasing && (
@@ -274,9 +297,9 @@ export function LetGoBox({ onBack }) {
           Write down a heavy thought. Click release, and watch it dissolve from your system permanently. (None of this is saved).
         </p>
       </div>
-      
+
       <div className="w-full mb-10 overflow-hidden rounded-[2rem] bg-white/50 max-w-xl relative z-10">
-        <textarea 
+        <textarea
           style={{
             opacity: isReleasing ? 0 : 1,
             transform: isReleasing ? 'translate3d(0, -30px, 0)' : 'translate3d(0, 0, 0)',
@@ -288,7 +311,7 @@ export function LetGoBox({ onBack }) {
           onChange={(e) => setText(e.target.value)}
           disabled={isReleasing}
         />
-        
+
         {/* Whisper Mode Button */}
         <div className="absolute bottom-4 right-4 z-20">
           <button
@@ -303,7 +326,7 @@ export function LetGoBox({ onBack }) {
         </div>
       </div>
 
-      <button 
+      <button
         onClick={handleRelease}
         disabled={!text.trim() || isReleasing}
         className="bg-purple-500 hover:bg-orange-600 text-white px-16 py-5 rounded-full font-extrabold text-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0 transform-gpu will-change-transform relative z-10"
@@ -328,14 +351,14 @@ export function BilateralStimulation({ onBack }) {
       try {
         oscLeftRef.current.stop();
         oscLeftRef.current.disconnect();
-      } catch (e) {}
+      } catch (e) { }
       oscLeftRef.current = null;
     }
     if (oscRightRef.current) {
       try {
         oscRightRef.current.stop();
         oscRightRef.current.disconnect();
-      } catch (e) {}
+      } catch (e) { }
       oscRightRef.current = null;
     }
     if (gainNodeRef.current) {
@@ -350,13 +373,13 @@ export function BilateralStimulation({ onBack }) {
       audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
     }
     const ctx = audioCtxRef.current;
-    
+
     // Create master gain to avoid clipping/clicks
     const masterGain = ctx.createGain();
     masterGain.gain.value = 0.5;
     masterGain.connect(ctx.destination);
     gainNodeRef.current = masterGain;
-    
+
     // Left Ear (Base frequency)
     const oscLeft = ctx.createOscillator();
     const pannerLeft = ctx.createStereoPanner();
@@ -365,7 +388,7 @@ export function BilateralStimulation({ onBack }) {
     pannerLeft.pan.value = -1; // Hard left
     oscLeft.connect(pannerLeft);
     pannerLeft.connect(masterGain);
-    
+
     // Right Ear (Base + 4Hz Delta for deep relaxation)
     const oscRight = ctx.createOscillator();
     const pannerRight = ctx.createStereoPanner();
@@ -377,12 +400,12 @@ export function BilateralStimulation({ onBack }) {
 
     oscLeft.start();
     oscRight.start();
-    
+
     oscLeftRef.current = oscLeft;
     oscRightRef.current = oscRight;
 
     setIsPlaying(true);
-    
+
     // Start visual animation timer
     let isLeft = true;
     timerRef.current = setInterval(() => {
@@ -409,7 +432,7 @@ export function BilateralStimulation({ onBack }) {
           <strong>Requires headphones.</strong> Follow the glowing orb with your eyes without turning your head. This process soothes the amygdala while binaural beats (4Hz delta) guide your brainwaves into deep relaxation.
         </p>
       </div>
-      
+
       <div className="w-full h-48 bg-slate-900/10 rounded-[2rem] relative mb-10 overflow-hidden border border-indigo-900/10 flex items-center">
         {isPlaying && (
           <motion.div
@@ -421,7 +444,7 @@ export function BilateralStimulation({ onBack }) {
         )}
       </div>
 
-      <button 
+      <button
         onClick={isPlaying ? stopAudio : startAudio}
         className={`${isPlaying ? 'bg-rose-500 hover:bg-rose-600' : 'bg-indigo-500 hover:bg-indigo-600'} text-white px-16 py-5 rounded-full font-extrabold text-xl shadow-md hover:-translate-y-1 transition-all w-64`}
       >

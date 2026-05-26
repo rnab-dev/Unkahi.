@@ -1,10 +1,3 @@
-/**
- * MoodDiary.jsx — Daily Emotion Check-In & Window of Tolerance
- * ==============================================================
- * A trauma-informed diary card. Features an adaptation of the Window of Tolerance.
- * Shame-free design: No streaks, fully optional.
- * 100% local storage.
- */
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 

@@ -33,8 +33,6 @@ const TREND_CONFIG = {
   worsening: { label: 'Needs Attention ↑', color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200', dot: 'bg-amber-400', desc: 'Your load has been climbing. This is information, not a verdict.' },
   stable: { label: 'Stable →', color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200', dot: 'bg-blue-400', desc: 'Your nervous system is maintaining a consistent pattern.' },
 };
-
-// ─── Journey Chart ───
 function JourneyChart({ last7Days, isTriggered }) {
   if (last7Days.length === 0) {
     return (
@@ -98,8 +96,6 @@ function JourneyChart({ last7Days, isTriggered }) {
 
   return <div style={{ height: '200px' }}><Line data={data} options={options} /></div>;
 }
-
-// ─── Score Ring ───
 function ScoreRing({ score }) {
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
@@ -125,8 +121,6 @@ function ScoreRing({ score }) {
     </div>
   );
 }
-
-// ─── Main Component ───
 export default function AnalyticsDashboard({ onBack }) {
   const { history, last7Days, isTriggered, trendDirection, baseline, stdDev, isLoading } = useEmotionalBaseline();
   const [logs, setLogs] = useState([]);

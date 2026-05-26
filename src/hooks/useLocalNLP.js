@@ -24,16 +24,12 @@
 import { useState, useCallback, useRef } from 'react';
 import Sentiment from 'sentiment';
 
-// ─── Singleton ────────────────────────────────────────────────────────────────
-
 /**
  * The Sentiment analyser is instantiated once at module level.
  * It holds no state between calls — each call to .analyze() is independent
  * and does not accumulate or store the input text.
  */
 const analyser = new Sentiment();
-
-// ─── Score Derivation ─────────────────────────────────────────────────────────
 
 /**
  * Converts the AFINN comparative score to a normalised emotionalWeight (0–100).
@@ -65,8 +61,6 @@ const deriveResult = (comparative) => {
 
   return { label, emotionalWeight, confidence };
 };
-
-// ─── The Hook ─────────────────────────────────────────────────────────────────
 
 /**
  * useLocalNLP
@@ -116,12 +110,9 @@ export function useLocalNLP() {
     try {
       // AFINN analysis — synchronous, in-memory, no network calls
       const result = analyser.analyze(textToProcess);
-
-      // ── PRIVACY CHECKPOINT ─────────────────────────────────────────────
       // Discard the text immediately. The analyser returns word tokens
       // inside `result.words` — we only use the numeric `comparative` score.
       textToProcess = null;
-      // ───────────────────────────────────────────────────────────────────
 
       const { label, emotionalWeight, confidence } = deriveResult(result.comparative);
 

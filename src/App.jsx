@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Assessment from './Assessment';
 import Dashboard from './Dashboard';
 import SupportDirectory from './SupportDirectory';
@@ -18,10 +18,20 @@ import PsychoEducation from './PsychoEducation';
 import GratitudeVault from './GratitudeVault';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminPanel from './AdminPanel';
+import B2BSignup from './B2BSignup';
+import LegalDisclaimerModal from './LegalDisclaimerModal';
 
 function App() {
   const [currentView, setCurrentView] = useState('welcome');
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(() => {
+    return localStorage.getItem('unkahi_terms_accepted') === 'true';
+  });
+
+  const handleAcceptTerms = () => {
+    localStorage.setItem('unkahi_terms_accepted', 'true');
+    setHasAcceptedTerms(true);
+  };
   const [assessmentData, setAssessmentData] = useState({
     basicScores: [],
     deepDiveScores: [],
@@ -241,16 +251,25 @@ function App() {
       <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
         <AdminPanel onBack={() => handleNavigate('welcome')} />
       </div>
+    ),
+    b2bsignup: () => (
+      <div className={`transition-all duration-500 w-full ${isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+        <B2BSignup onBack={() => handleNavigate('welcome')} />
+      </div>
     )
   };
 
   return (
-    <div className={`min-h-screen relative overflow-x-hidden flex flex-col transition-colors duration-1000 ${currentView === 'assessment'
-        ? 'bg-gradient-to-br from-cyan-100 via-purple-200 to-pink-100'
-        : 'bg-gradient-to-br from-cyan-50 via-purple-100 to-pink-50'
+    <div className={`min-h-screen relative overflow-x-hidden flex flex-col transition-colors duration-1000 bg-mesh-animated ${currentView === 'assessment'
+      ? 'bg-gradient-to-br from-slate-100 via-indigo-100 to-rose-100'
+      : 'bg-gradient-to-br from-slate-50 via-purple-50 to-teal-50'
       }`}
     >
-      {/* ── SOS Override Overlay ── */}
+      <AnimatePresence>
+        {!hasAcceptedTerms && (
+          <LegalDisclaimerModal onAccept={handleAcceptTerms} />
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {sosActive && (
           <motion.div
@@ -310,8 +329,6 @@ function App() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* ── NightWatch Overlay (1–5 AM) ── */}
       <AnimatePresence>
         {showNightWatch && (
           <motion.div
@@ -337,8 +354,6 @@ function App() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* ── Persistent SOS Button ── */}
       <button
         onClick={() => setSosActive(true)}
         className="fixed bottom-6 right-6 z-[90] w-14 h-14 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-500 rounded-full flex items-center justify-center shadow-lg backdrop-blur-md transition-all group"
@@ -346,6 +361,8 @@ function App() {
       >
         <span className="text-xl group-hover:scale-110 transition-transform">⚓</span>
       </button>
+
+      <FloatingToolsMenu onNavigate={handleNavigate} />
 
       {currentView !== 'welcome' && (
         <div className="w-full flex flex-row items-center justify-between pt-6 px-6 md:px-10 mb-6 md:mb-8 max-w-6xl mx-auto z-10 transition-all duration-500 opacity-100">
@@ -366,15 +383,6 @@ function App() {
       </main>
 
       <footer className="mt-auto py-6 text-center text-slate-500/80 font-medium text-xs tracking-widest z-10 relative flex flex-col items-center gap-2">
-        <span className="uppercase">For the society by ASA</span>
-        {currentView === 'welcome' && (
-          <button
-            onClick={() => handleNavigate('admin')}
-            className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors mt-1 focus:outline-none"
-          >
-            🛡️ Admin Panel
-          </button>
-        )}
         <span className="normal-case text-[0.65rem] max-w-md px-4 opacity-75 tracking-normal">
           🔒 Privacy Note: To help us understand and support our global community, we momentarily collect your approximate regional location (like city or country).
         </span>
@@ -392,5 +400,96 @@ const QuickExitButton = () => (
     Quick Exit
   </button>
 );
+
+const FloatingToolsMenu = ({ onNavigate }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [safeContacts, setSafeContacts] = useState([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      try {
+        const saved = localStorage.getItem('unkahi_safety_plan');
+        if (saved) {
+          const plan = JSON.parse(saved);
+          if (plan.support_contacts && Array.isArray(plan.support_contacts)) {
+            setSafeContacts(plan.support_contacts);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load safety plan for floating menu:", e);
+      }
+    }
+  }, [isOpen]);
+
+  return (
+    <div className="fixed bottom-6 left-6 z-[90] flex flex-col-reverse gap-3 items-start">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-14 h-14 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-600 rounded-full flex items-center justify-center shadow-lg backdrop-blur-md transition-all group"
+        title="Your Place"
+      >
+        <span className={`text-2xl group-hover:scale-110 transition-transform ${isOpen ? 'rotate-45' : ''}`}>
+          {isOpen ? '✖' : '🧭'}
+        </span>
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.9, originY: 1, originX: 0 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="flex flex-col gap-1 mb-2 bg-white/90 backdrop-blur-xl p-3 rounded-[2rem] border border-slate-200/50 shadow-2xl origin-bottom-left max-h-[70vh] overflow-y-auto"
+          >
+            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2 px-3 pt-2">Your Place</p>
+            
+            <button onClick={() => { setIsOpen(false); onNavigate('safetyplan'); }} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 rounded-2xl transition-colors text-left group">
+              <span className="text-xl group-hover:scale-110 transition-transform">🛡️</span>
+              <span className="text-sm font-bold text-slate-700">Safety Plan</span>
+            </button>
+            <button onClick={() => { setIsOpen(false); onNavigate('mooddiary'); }} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 rounded-2xl transition-colors text-left group">
+              <span className="text-xl group-hover:scale-110 transition-transform">📝</span>
+              <span className="text-sm font-bold text-slate-700">Mood Diary</span>
+            </button>
+            <button onClick={() => { setIsOpen(false); onNavigate('psychoed'); }} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 rounded-2xl transition-colors text-left group">
+              <span className="text-xl group-hover:scale-110 transition-transform">🧠</span>
+              <span className="text-sm font-bold text-slate-700">Nervous System Ed</span>
+            </button>
+            <button onClick={() => { setIsOpen(false); onNavigate('vault'); }} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 rounded-2xl transition-colors text-left group">
+              <span className="text-xl group-hover:scale-110 transition-transform">✨</span>
+              <span className="text-sm font-bold text-slate-700">Safe Vault</span>
+            </button>
+
+            {safeContacts.length > 0 && (
+              <>
+                <div className="h-px w-full bg-slate-200 my-2" />
+                <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1 px-3">Safe Contacts</p>
+                {safeContacts.map((contact, idx) => {
+                  // Extract digits (and + sign) to create a valid phone link
+                  const numStr = contact.replace(/[^\d+]/g, '');
+                  if (numStr.length >= 3) {
+                    return (
+                      <a key={idx} href={`tel:${numStr}`} className="flex items-center gap-3 px-4 py-2 hover:bg-rose-50 rounded-2xl transition-colors text-left group">
+                        <span className="text-xl group-hover:scale-110 transition-transform text-rose-500">📞</span>
+                        <span className="text-sm font-bold text-slate-700 truncate max-w-[180px]">{contact}</span>
+                      </a>
+                    );
+                  }
+                  // If there are no recognizable numbers, just render the name
+                  return (
+                    <div key={idx} className="flex items-center gap-3 px-4 py-2 hover:bg-rose-50 rounded-2xl transition-colors text-left group cursor-default">
+                      <span className="text-xl group-hover:scale-110 transition-transform text-slate-400">👤</span>
+                      <span className="text-sm font-bold text-slate-700 truncate max-w-[180px]">{contact}</span>
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 export default App;

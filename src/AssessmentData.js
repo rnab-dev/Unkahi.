@@ -118,14 +118,11 @@ export const STORY_PHASES = [
     ]
   }
 ];
-
-// ──────────────────────────────────────────────────────────────────────────────
 // DEEP-DIVE PHASES — Confirmatory Assessment (Phase 2)
 // Uses projective, associative, and memory-based questioning techniques.
 // Cross-mapped to the same 6 pillars but approached from a completely different
 // psychological angle: imagery, temporal memory regression, social mirror response.
 // The nervous system answers before the conscious mind can filter.
-// ──────────────────────────────────────────────────────────────────────────────
 export const DEEP_DIVE_PHASES = [
   {
     phase: "Layer A: Inner Weather",

@@ -1,11 +1,3 @@
-/**
- * UnifiedDataPage.jsx — "Your Data" Hub
- * =========================================
- * Aggregates data from both assessments (basic + deep dive) and
- * shows a complete, detailed picture of the user's nervous system journey.
- * 100% local — no data ever uploaded.
- */
-
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Radar, Bar } from 'react-chartjs-2';
@@ -133,8 +125,6 @@ const formatDateLabel = (dateStr) => {
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   } catch { return dateStr; }
 };
-
-// ─── Score Ring ───────────────────────────────────────────────────────────────
 function ScoreRing({ score, label = 'Load', size = 112 }) {
   const radius = size * 0.36;
   const circumference = 2 * Math.PI * radius;
@@ -156,8 +146,6 @@ function ScoreRing({ score, label = 'Load', size = 112 }) {
     </div>
   );
 }
-
-// ─── Journey Chart ────────────────────────────────────────────────────────────
 function JourneyChart({ last7Days, isTriggered }) {
   if (last7Days.length === 0) return (
     <div className="flex flex-col items-center justify-center h-48 text-slate-300">
@@ -194,8 +182,6 @@ function JourneyChart({ last7Days, isTriggered }) {
   };
   return <div style={{ height: '200px' }}><Line data={data} options={options} /></div>;
 }
-
-// ─── Dimension Bar Chart ──────────────────────────────────────────────────────
 function DimensionBars({ scores, label, maxVal }) {
   const max = maxVal || Math.max(8, ...scores);
   return (
@@ -224,8 +210,6 @@ function DimensionBars({ scores, label, maxVal }) {
     </div>
   );
 }
-
-// ─── Radar Chart ─────────────────────────────────────────────────────────────
 function FootprintRadar({ scores, label = 'Emotional Footprint', colorRGB = '139, 92, 246' }) {
   const data = {
     labels: DIMENSION_LABELS,
@@ -256,8 +240,6 @@ function FootprintRadar({ scores, label = 'Emotional Footprint', colorRGB = '139
   };
   return <Radar data={data} options={options} />;
 }
-
-// ─── Insight Card ─────────────────────────────────────────────────────────────
 function InsightCard({ idx, rank, verified = false }) {
   const ins = INSIGHTS[idx];
   const [expanded, setExpanded] = useState(false);
@@ -300,8 +282,6 @@ function InsightCard({ idx, rank, verified = false }) {
     </motion.div>
   );
 }
-
-// ─── Main Component ───────────────────────────────────────────────────────────
 export default function UnifiedDataPage({ onNavigate, assessmentData }) {
   const { history, last7Days, isTriggered, trendDirection, baseline, stdDev, isLoading } = useEmotionalBaseline();
   const [logs, setLogs] = useState([]);
@@ -309,7 +289,7 @@ export default function UnifiedDataPage({ onNavigate, assessmentData }) {
 
   useEffect(() => {
     const saved = localStorage.getItem('unkahi_resilience_logs');
-    if (saved) { try { setLogs(JSON.parse(saved)); } catch (e) {} }
+    if (saved) { try { setLogs(JSON.parse(saved)); } catch (e) { } }
   }, []);
 
   const basicScores = assessmentData?.basicScores || [];
@@ -319,10 +299,10 @@ export default function UnifiedDataPage({ onNavigate, assessmentData }) {
   const deepDiveComplete = assessmentData?.deepDiveComplete || false;
 
   const basicLoad = basicComplete
-    ? Math.min(100, Math.round((basicScores.reduce((a, b) => a + b, 0) / 40) * 100))
+    ? Math.min(100, Math.round((basicScores.reduce((a, b) => a + b, 0) / 60) * 100))
     : null;
   const combinedLoad = deepDiveComplete
-    ? Math.min(100, Math.round((combinedScores.reduce((a, b) => a + b, 0) / 80) * 100))
+    ? Math.min(100, Math.round((combinedScores.reduce((a, b) => a + b, 0) / 120) * 100))
     : null;
 
   const latestHistory = history[history.length - 1];
@@ -343,8 +323,6 @@ export default function UnifiedDataPage({ onNavigate, assessmentData }) {
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-6 space-y-6 font-sans">
-
-      {/* ── Header ────────────────────────────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <button onClick={() => onNavigate('welcome')} className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 font-bold uppercase tracking-widest text-xs transition-colors">
           ← Home
@@ -354,8 +332,6 @@ export default function UnifiedDataPage({ onNavigate, assessmentData }) {
           <p className="text-xs text-slate-400 font-medium">100% local · never uploaded</p>
         </div>
       </motion.div>
-
-      {/* ── Assessment Status Cards ──────────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04 }}
         className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className={`rounded-3xl p-5 border flex items-start gap-4 ${basicComplete ? 'bg-teal-50 border-teal-200' : 'bg-slate-50 border-slate-200'}`}>
@@ -400,8 +376,6 @@ export default function UnifiedDataPage({ onNavigate, assessmentData }) {
           )}
         </div>
       </motion.div>
-
-      {/* ── Current State Ring + Baseline ─────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
         className="bg-white/80 backdrop-blur-md rounded-3xl border border-white/60 p-6 shadow-xl shadow-indigo-500/5">
         <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-5">Nervous System State</h2>
@@ -470,8 +444,6 @@ export default function UnifiedDataPage({ onNavigate, assessmentData }) {
           </div>
         )}
       </motion.div>
-
-      {/* ── Emotional Footprint + Dimension Breakdown ────────────── */}
       {(basicComplete || deepDiveComplete) && (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
           className="bg-white/80 backdrop-blur-md rounded-3xl border border-white/60 p-6 shadow-xl shadow-indigo-500/5">
@@ -542,8 +514,6 @@ export default function UnifiedDataPage({ onNavigate, assessmentData }) {
           </div>
         </motion.div>
       )}
-
-      {/* ── Primary Anchors — Detailed ───────────────────────────── */}
       {primaryIndices.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}>
           <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">
@@ -579,8 +549,6 @@ export default function UnifiedDataPage({ onNavigate, assessmentData }) {
           )}
         </motion.div>
       )}
-
-      {/* ── 7-Day Journey Chart ──────────────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
         className="bg-white/80 backdrop-blur-md rounded-3xl border border-white/60 p-6 shadow-xl shadow-indigo-500/5">
         <div className="flex items-center justify-between mb-5">
@@ -610,8 +578,6 @@ export default function UnifiedDataPage({ onNavigate, assessmentData }) {
           </div>
         )}
       </motion.div>
-
-      {/* ── Activity Timeline ────────────────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }}
         className="bg-white/80 backdrop-blur-md rounded-3xl border border-white/60 p-6 shadow-xl shadow-indigo-500/5">
         <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-5">Activity Timeline</h2>
@@ -661,8 +627,6 @@ export default function UnifiedDataPage({ onNavigate, assessmentData }) {
           </div>
         )}
       </motion.div>
-
-      {/* ── Quick-Launch Healing Tools ───────────────────────────── */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}
         className="bg-white/80 backdrop-blur-md rounded-3xl border border-white/60 p-6 shadow-xl shadow-indigo-500/5">
         <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Healing Tools</h2>
@@ -690,8 +654,6 @@ export default function UnifiedDataPage({ onNavigate, assessmentData }) {
           </div>
         )}
       </motion.div>
-
-      {/* ── Take Assessment CTA (if none done) ──────────────────── */}
       {!hasAnyData && (
         <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.32 }}
           className="bg-gradient-to-br from-teal-50 to-indigo-50 border border-teal-200 rounded-3xl p-8 text-center">
@@ -705,8 +667,6 @@ export default function UnifiedDataPage({ onNavigate, assessmentData }) {
           </button>
         </motion.div>
       )}
-
-      {/* ── Privacy Footer ───────────────────────────────────────── */}
       <p className="text-center text-xs text-slate-400 font-medium pb-4">
         🔒 All data lives exclusively on this device. Nothing is ever uploaded or shared.
       </p>

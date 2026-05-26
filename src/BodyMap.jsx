@@ -49,7 +49,7 @@ export default function BodyMap({ onBack, onNavigateTool }) {
 
   return (
     <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-indigo-500/10 rounded-[3rem] px-6 py-10 sm:px-12 sm:pt-10 sm:pb-16 mt-6 sm:mt-10 max-w-4xl w-full mx-auto flex flex-col items-center transform-gpu relative overflow-hidden min-h-[650px]">
-      
+
       <div className="flex items-start justify-start w-full relative z-10 mb-6">
         <button onClick={onBack} className="text-slate-400 hover:text-indigo-600 font-bold uppercase tracking-widest text-xs transition-colors">
           ← Return to Dashboard
@@ -64,29 +64,44 @@ export default function BodyMap({ onBack, onNavigateTool }) {
       </div>
 
       <div className="flex flex-col md:flex-row items-center justify-center gap-12 w-full mt-4">
-        
+
         {/* Interactive SVG Body */}
         <div className="relative w-48 h-80">
           <svg viewBox="0 0 100 120" className="w-full h-full drop-shadow-xl overflow-visible">
             {/* Base Body Outline */}
-            <path 
-              d="M40 20 C40 5, 60 5, 60 20 C60 30, 55 35, 50 40 C45 35, 40 30, 40 20 Z M45 40 L55 40 L55 48 L45 48 Z M35 50 C35 50, 65 50, 65 50 C70 60, 65 75, 50 75 C35 75, 30 60, 35 50 Z M38 78 C38 78, 62 78, 62 78 C62 95, 55 105, 50 105 C45 105, 38 95, 38 78 Z M30 55 C20 60, 25 90, 25 90 L35 90 C35 90, 35 65, 35 55 Z M70 55 C80 60, 75 90, 75 90 L65 90 C65 90, 65 65, 65 55 Z M40 105 C35 115, 35 140, 35 140 L45 140 C45 140, 45 115, 50 105 Z M60 105 C65 115, 65 140, 65 140 L55 140 C55 140, 55 115, 50 105 Z" 
-              fill="#e2e8f0" 
+            <path
+              d="M40 20 C40 5, 60 5, 60 20 C60 30, 55 35, 50 40 C45 35, 40 30, 40 20 Z M45 40 L55 40 L55 48 L45 48 Z M35 50 C35 50, 65 50, 65 50 C70 60, 65 75, 50 75 C35 75, 30 60, 35 50 Z M38 78 C38 78, 62 78, 62 78 C62 95, 55 105, 50 105 C45 105, 38 95, 38 78 Z M30 55 C20 60, 25 90, 25 90 L35 90 C35 90, 35 65, 35 55 Z M70 55 C80 60, 75 90, 75 90 L65 90 C65 90, 65 65, 65 55 Z M40 105 C35 115, 35 140, 35 140 L45 140 C45 140, 45 115, 50 105 Z M60 105 C65 115, 65 140, 65 140 L55 140 C55 140, 55 115, 50 105 Z"
+              fill="#e2e8f0"
             />
-            
+
             {/* Interactive Zones */}
-            {ZONES.map(zone => (
-              <motion.path
-                key={zone.id}
-                d={zone.d}
-                fill={activeZone?.id === zone.id ? 'var(--active-color)' : '#cbd5e1'}
-                className={`cursor-pointer transition-colors duration-300 ${zone.hover}`}
-                style={{ '--active-color': zone.id === 'head' ? '#a855f7' : zone.id === 'throat' ? '#6366f1' : zone.id === 'chest' ? '#f43f5e' : '#f59e0b' }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setActiveZone(zone)}
-              />
-            ))}
+            <AnimatePresence>
+              {ZONES.map(zone => {
+                const isActive = activeZone?.id === zone.id;
+                const activeColor = zone.id === 'head' ? '#a855f7' : zone.id === 'throat' ? '#6366f1' : zone.id === 'chest' ? '#f43f5e' : '#f59e0b';
+                return (
+                  <motion.path
+                    key={zone.id}
+                    d={zone.d}
+                    fill={isActive ? activeColor : '#cbd5e1'}
+                    className={`cursor-pointer origin-center`}
+                    style={{ transformOrigin: '50% 50%' }}
+                    animate={{
+                      scale: isActive ? 1.08 : 1,
+                      filter: isActive ? `drop-shadow(0 0 12px ${activeColor})` : 'drop-shadow(0 0 0px rgba(0,0,0,0))'
+                    }}
+                    whileHover={{
+                      scale: 1.05,
+                      fill: activeColor,
+                      filter: `drop-shadow(0 0 8px ${activeColor})`
+                    }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    onClick={() => setActiveZone(zone)}
+                  />
+                );
+              })}
+            </AnimatePresence>
           </svg>
         </div>
 
@@ -106,8 +121,8 @@ export default function BodyMap({ onBack, onNavigateTool }) {
                 </div>
                 <h3 className="text-2xl font-black text-slate-800 mb-2">Feeling it here?</h3>
                 <p className="text-slate-500 font-medium mb-6">Common symptoms: {activeZone.symptoms}</p>
-                
-                <button 
+
+                <button
                   onClick={() => onNavigateTool(activeZone.toolId)}
                   className={`w-full py-4 rounded-xl text-white font-bold shadow-md hover:-translate-y-1 transition-transform flex justify-between px-6 items-center ${activeZone.color}`}
                 >

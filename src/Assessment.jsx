@@ -50,7 +50,7 @@ export default function Assessment({ onComplete, onNavigate }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [hasCompletedSomatic, setHasCompletedSomatic] = useState(false);
   const [selectedSomatic, setSelectedSomatic] = useState([]);
-  const [scores, setScores] = useState([0, 0, 0, 0, 0, 0]); 
+  const [scores, setScores] = useState([0, 0, 0, 0, 0, 0]);
   const [responses, setResponses] = useState([]);
   const [isFading, setIsFading] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
@@ -59,8 +59,6 @@ export default function Assessment({ onComplete, onNavigate }) {
   const [surveyId, setSurveyId] = useState(null); // Holds the Supabase row ID for resonance update
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
-
-  // ── Deep Dive State ────────────────────────────────────────────────────────
   const [deepDiveState, setDeepDiveState] = useState('idle'); // 'idle' | 'warning' | 'active' | 'done'
   const [deepDiveStep, setDeepDiveStep] = useState(0);
   const [deepDiveScores, setDeepDiveScores] = useState([0, 0, 0, 0, 0, 0]);
@@ -77,7 +75,7 @@ export default function Assessment({ onComplete, onNavigate }) {
 
   const handleSomaticSubmit = () => {
     setIsFading(true);
-    
+
     // Apply selected weights
     let newScores = [...scores];
     selectedSomatic.forEach(id => {
@@ -93,8 +91,6 @@ export default function Assessment({ onComplete, onNavigate }) {
       setIsFading(false);
     }, 400);
   };
-
-  // ── Edge AI: Local Baseline Learner ──────────────────────────────────────
   // The hook reads from IndexedDB on mount and exposes saveScore() + baseline data.
   // All raw score history stays local — only abstract telemetry goes to Supabase.
   const { saveScore, isTriggered, baseline, stdDev } = useEmotionalBaseline();
@@ -111,23 +107,15 @@ export default function Assessment({ onComplete, onNavigate }) {
       } else {
         setIsFinished(true);
         setIsFading(false);
-
-        // ── Step 1: Compute the final scores (weights applied to last answer) ──
         const finalScores = scores.map((score, idx) => score + weights[idx]);
         const finalResponses = [...responses, { step: currentStep + 1, option_selected: optionIndex, answer_text: optionText }];
-
-        // ── Notify App.jsx immediately with basic scores ─────────────────────
         onComplete && onComplete(finalScores, null, 'basic');
-
-        // ── Step 2: Normalize to 0-100 and save LOCALLY to IndexedDB ──────────
-        const assumedMax = 40;
+        const assumedMax = 60; // Increased to yield a lower, less alarming score
         const normalizedScore = Math.min(100, Math.round(
           (finalScores.reduce((a, b) => a + b, 0) / assumedMax) * 100
         ));
 
         await saveScore(normalizedScore);
-
-        // ── Step 3: Push ONLY abstract ML telemetry to Supabase ───────────────
         logAssessmentComplete({ isTriggered, baseline, stdDev })
           .then(({ success, error: telErr }) => {
             if (success) {
@@ -136,34 +124,35 @@ export default function Assessment({ onComplete, onNavigate }) {
               console.warn('[Unkahi] Telemetry sync failed (non-critical):', telErr);
             }
           });
-
-        // ── Step 4: Also keep the existing surveys table write (resonance, etc.) 
         try {
           const geo = await getGeoIPDetails();
-          // Fallback UUID generator for testing on mobile over HTTP (non-secure context)
-          const newSurveyId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
-            ? crypto.randomUUID() 
-            : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-                const r = Math.random() * 16 | 0;
-                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-              });
+          const currentOrgId = sessionStorage.getItem('unkahi_org_id') || 'public';
           
+          // Fallback UUID generator for testing on mobile over HTTP (non-secure context)
+          const newSurveyId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+              const r = Math.random() * 16 | 0;
+              return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+
           const { error } = await supabase
             .from('surveys')
-            .insert([{ 
+            .insert([{
               id: newSurveyId,
-              survey_data: { 
+              survey_data: {
                 score_normalized: normalizedScore,
                 dimension_count: finalScores.length,
                 scores: finalScores, // Tracks category scores for validating question weights
-                responses: finalResponses // Tracks exact answers chosen to analyze question accuracy
+                responses: finalResponses, // Tracks exact answers chosen to analyze question accuracy
+                org_id: currentOrgId // Link this survey to the B2B cohort!
               },
               ip_address: geo.ip,
               country: geo.country,
               city: geo.city,
               region: geo.region
             }]);
-            
+
           if (error) {
             console.error('Supabase Error saving survey:', error.message);
           } else {
@@ -174,13 +163,13 @@ export default function Assessment({ onComplete, onNavigate }) {
           console.error('Error saving survey record:', err);
         }
       }
-    }, 300); 
+    }, 300);
   };
 
   useEffect(() => {
     if (isFinished) {
       const totalScore = scores.reduce((a, b) => a + b, 0);
-      const assumedMax = 40; 
+      const assumedMax = 60; // Increased to yield a lower, less alarming score
       setTimeout(() => {
         setLoadPercentage(Math.min(100, Math.round((totalScore / assumedMax) * 100)));
       }, 300);
@@ -198,12 +187,12 @@ export default function Assessment({ onComplete, onNavigate }) {
         backgroundColor: 'rgba(139, 92, 246, 0.2)',
         borderColor: 'rgba(139, 92, 246, 0.8)',
         borderWidth: 3,
-        pointBackgroundColor: 'rgba(139, 92, 246, 1)', 
+        pointBackgroundColor: 'rgba(139, 92, 246, 1)',
         pointBorderColor: '#fff',
         pointHoverBackgroundColor: '#fff',
         pointHoverBorderColor: 'rgba(139, 92, 246, 1)',
         pointRadius: 5,
-        tension: 0.4, 
+        tension: 0.4,
       },
     ],
   };
@@ -267,13 +256,13 @@ export default function Assessment({ onComplete, onNavigate }) {
     setResonance(value);
     if (surveyId) {
       const dbValue = value === 'yes' ? 'Accurate' : 'Inaccurate';
-      
-      const newId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
-        ? crypto.randomUUID() 
+
+      const newId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
         : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-          });
-          
+          const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+
       const geo = await getGeoIPDetails();
       const { error } = await supabase
         .from('surveys')
@@ -286,7 +275,7 @@ export default function Assessment({ onComplete, onNavigate }) {
           city: geo.city,
           region: geo.region
         }]);
-      
+
       if (error) console.error("Error inserting resonance:", error.message);
     }
   };
@@ -295,7 +284,7 @@ export default function Assessment({ onComplete, onNavigate }) {
     if (!feedbackText.trim() || !surveyId) return;
     try {
       const totalScore = scores.reduce((a, b) => a + b, 0);
-      const assumedMax = 40; 
+      const assumedMax = 60; // Increased to yield a lower, less alarming score
       const normalizedScore = Math.min(100, Math.round((totalScore / assumedMax) * 100));
 
       const newData = {
@@ -307,13 +296,13 @@ export default function Assessment({ onComplete, onNavigate }) {
         responses: responses,
         feedback: feedbackText.trim()
       };
-      
-      const newId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
-        ? crypto.randomUUID() 
+
+      const newId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
         : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-          });
-          
+          const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+
       const geo = await getGeoIPDetails();
       const { error: insertError } = await supabase
         .from('surveys')
@@ -326,9 +315,9 @@ export default function Assessment({ onComplete, onNavigate }) {
           city: geo.city,
           region: geo.region
         }]);
-        
+
       if (insertError) throw insertError;
-      
+
       setFeedbackSubmitted(true);
     } catch (err) {
       console.error("Error submitting feedback:", err.message);
@@ -351,7 +340,7 @@ export default function Assessment({ onComplete, onNavigate }) {
       { id: 'emdr', name: 'Bilateral Audio', emoji: '🎧' }, // Isolation (Panic)
       { id: 'breathe', name: 'Blooming Lotus', emoji: '🌸' } // Env. Control
     ];
-    
+
     const suggestedTool = TOOL_MAP[topIndices[0]];
 
     return (
@@ -372,8 +361,8 @@ export default function Assessment({ onComplete, onNavigate }) {
             <div className="w-full max-w-[280px]"><Radar data={chartData} options={chartOptions} /></div>
           </div>
           <div className="bg-white/60 backdrop-blur-lg border border-white p-6 flex flex-col justify-center rounded-[2rem] shadow-sm">
-             <h4 className="text-lg font-bold text-slate-600 mb-6 text-center w-full border-b border-white/50 pb-4">Specific Pillars</h4>
-             <div className="w-full pt-2"><Bar data={barData} options={barOptions} /></div>
+            <h4 className="text-lg font-bold text-slate-600 mb-6 text-center w-full border-b border-white/50 pb-4">Specific Pillars</h4>
+            <div className="w-full pt-2"><Bar data={barData} options={barOptions} /></div>
           </div>
         </div>
         <h3 className="text-2xl font-extrabold text-slate-700 tracking-tight mb-8 border-b border-white/50 pb-4">Your Primary Anchors</h3>
@@ -399,7 +388,7 @@ export default function Assessment({ onComplete, onNavigate }) {
             <button onClick={() => handleResonance('yes')} className={`rounded-full px-6 py-3 md:px-8 md:py-4 font-extrabold text-base md:text-lg transition-all duration-300 w-full sm:w-auto shadow-sm ${resonance === 'yes' ? 'bg-[#A3BE8C] text-white shadow-lg -translate-y-1' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>👍 Yes, accurate</button>
             <button onClick={() => handleResonance('no')} className={`rounded-full px-6 py-3 md:px-8 md:py-4 font-extrabold text-base md:text-lg transition-all duration-300 w-full sm:w-auto shadow-sm ${resonance === 'no' ? 'bg-[#B48EAD] text-white shadow-lg -translate-y-1' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>👎 Not quite right</button>
           </div>
-          
+
           <div className={`overflow-hidden transition-all duration-500 ${resonance ? 'max-h-96 opacity-100 mb-10' : 'max-h-0 opacity-0'}`}>
             <p className="text-[#D08770] font-extrabold text-xl mb-4">Thank you for tuning in to yourself.</p>
             {!feedbackSubmitted ? (
@@ -424,7 +413,7 @@ export default function Assessment({ onComplete, onNavigate }) {
               </div>
             )}
           </div>
-          
+
           <div className="bg-teal-50 border border-teal-200 rounded-2xl p-4 md:p-6 mb-8 max-w-sm mx-auto w-full">
             <p className="text-teal-700 font-bold text-xs md:text-sm uppercase tracking-wider mb-2">Recommended for You Now</p>
             <div className="flex items-center justify-center gap-3">
@@ -453,8 +442,6 @@ export default function Assessment({ onComplete, onNavigate }) {
             </p>
           )}
         </div>
-
-        {/* ── Or choose your own tool ────────────────────────────── */}
         <div className="mt-10 pt-8 border-t border-white/50">
           <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 text-center">Or choose your own path</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -470,8 +457,6 @@ export default function Assessment({ onComplete, onNavigate }) {
             ))}
           </div>
         </div>
-
-        {/* ── Your Data CTA ─────────────────────────────────────────── */}
         {onNavigate && (
           <div className="mt-8 pt-6 border-t border-white/50 flex justify-center">
             <button
@@ -490,8 +475,6 @@ export default function Assessment({ onComplete, onNavigate }) {
       </div>
     );
   }
-
-  // ── Deep Dive: Content Warning Screen ─────────────────────────────────────
   if (deepDiveState === 'warning') {
     return (
       <div className="bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-purple-500/10 rounded-[2.5rem] p-8 md:p-12 max-w-4xl w-full mx-auto">
@@ -528,19 +511,17 @@ export default function Assessment({ onComplete, onNavigate }) {
       </div>
     );
   }
-
-  // ── Deep Dive: Active Questions ────────────────────────────────────────────
   if (deepDiveState === 'active') {
     const deepPhase = DEEP_DIVE_PHASES[deepDiveStep];
 
     const handleDeepDiveSelect = (weights, optionIndex, optionText) => {
       setIsFading(true);
       const updatedScores = deepDiveScores.map((s, i) => s + weights[i]);
-      
+
       const currentDeepDiveResponse = {
-         step: STORY_PHASES.length + deepDiveStep + 1,
-         option_selected: optionIndex,
-         answer_text: optionText
+        step: STORY_PHASES.length + deepDiveStep + 1,
+        option_selected: optionIndex,
+        answer_text: optionText
       };
       const updatedDeepDiveResponses = [...deepDiveResponses, currentDeepDiveResponse];
 
@@ -555,7 +536,7 @@ export default function Assessment({ onComplete, onNavigate }) {
           setDeepDiveResponses(updatedDeepDiveResponses);
           setDeepDiveState('done');
           setIsFading(false);
-          
+
           // Notify App.jsx immediately with combined scores
           const combined = scores.map((s, i) => s + updatedScores[i]);
           const combinedResponses = [...responses, ...updatedDeepDiveResponses];
@@ -563,26 +544,25 @@ export default function Assessment({ onComplete, onNavigate }) {
 
           // Update Supabase with the highly accurate combined footprint and full responses
           if (surveyId) {
-             const newScoreNormalized = Math.min(100, Math.round((combined.reduce((a,b)=>a+b,0) / 64) * 100));
-             supabase.from('surveys').update({
-                survey_data: {
-                  score_normalized: newScoreNormalized,
-                  dimension_count: combined.length,
-                  scores: combined,
-                  responses: combinedResponses
-                }
-             }).eq('id', surveyId).then(({error}) => {
-                if (error) console.error("Error saving deep dive scores:", error.message);
-             });
+            const newScoreNormalized = Math.min(100, Math.round((combined.reduce((a, b) => a + b, 0) / 64) * 100));
+            supabase.from('surveys').update({
+              survey_data: {
+                score_normalized: newScoreNormalized,
+                dimension_count: combined.length,
+                scores: combined,
+                responses: combinedResponses
+              }
+            }).eq('id', surveyId).then(({ error }) => {
+              if (error) console.error("Error saving deep dive scores:", error.message);
+            });
           }
         }
       }, 300);
     };
 
     return (
-      <div className={`bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-purple-500/10 rounded-[2.5rem] p-6 md:p-10 max-w-4xl w-full mx-auto transition-all duration-300 ease-in-out transform ${
-        isFading ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'
-      }`}>
+      <div className={`bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-purple-500/10 rounded-[2.5rem] p-6 md:p-10 max-w-4xl w-full mx-auto transition-all duration-300 ease-in-out transform ${isFading ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'
+        }`}>
         <div className="w-full flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <div className="text-[10px] font-bold tracking-widest text-purple-400 uppercase bg-purple-50 border border-purple-100 py-1.5 px-3 rounded-full">
@@ -614,10 +594,9 @@ export default function Assessment({ onComplete, onNavigate }) {
             {DEEP_DIVE_PHASES.map((_, idx) => (
               <div
                 key={idx}
-                className={`h-2 w-2 rounded-full transition-all duration-500 ${
-                  idx === deepDiveStep ? 'bg-purple-500 scale-150 shadow-sm' :
-                  idx < deepDiveStep ? 'bg-purple-300' : 'bg-slate-200'
-                }`}
+                className={`h-2 w-2 rounded-full transition-all duration-500 ${idx === deepDiveStep ? 'bg-purple-500 scale-150 shadow-sm' :
+                    idx < deepDiveStep ? 'bg-purple-300' : 'bg-slate-200'
+                  }`}
               />
             ))}
           </div>
@@ -625,12 +604,10 @@ export default function Assessment({ onComplete, onNavigate }) {
       </div>
     );
   }
-
-  // ── Deep Dive: Combined Results ─────────────────────────────────────────────
   if (deepDiveState === 'done') {
     const combined = scores.map((s, i) => s + deepDiveScores[i]);
     const combinedTotal = combined.reduce((a, b) => a + b, 0);
-    const combinedMax = 80; // 40 per phase × 2
+    const combinedMax = 120; // Increased to yield a lower, less alarming score
     const combinedLoad = Math.min(100, Math.round((combinedTotal / combinedMax) * 100));
 
     const topCombined = combined
@@ -755,7 +732,7 @@ export default function Assessment({ onComplete, onNavigate }) {
             Where are you holding tension right now?
           </p>
           <p className="text-sm text-slate-500 font-medium mb-8">Trauma lives in the body. Select any physical sensations you feel (or skip if none).</p>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full mb-8">
             {SOMATIC_OPTIONS.map(opt => {
               const isSelected = selectedSomatic.includes(opt.id);
@@ -763,15 +740,14 @@ export default function Assessment({ onComplete, onNavigate }) {
                 <button
                   key={opt.id}
                   onClick={() => {
-                    setSelectedSomatic(prev => 
+                    setSelectedSomatic(prev =>
                       prev.includes(opt.id) ? prev.filter(id => id !== opt.id) : [...prev, opt.id]
                     );
                   }}
-                  className={`p-4 rounded-2xl flex flex-col items-center gap-3 transition-all duration-300 border ${
-                    isSelected 
-                      ? 'bg-teal-50 border-teal-200 shadow-inner scale-95' 
+                  className={`p-4 rounded-2xl flex flex-col items-center gap-3 transition-all duration-300 border ${isSelected
+                      ? 'bg-teal-50 border-teal-200 shadow-inner scale-95'
                       : 'bg-white/80 border-white shadow-sm hover:shadow-md hover:-translate-y-1'
-                  }`}
+                    }`}
                 >
                   <span className="text-3xl">{opt.icon}</span>
                   <span className={`text-xs font-bold ${isSelected ? 'text-teal-700' : 'text-slate-600'}`}>
@@ -782,7 +758,7 @@ export default function Assessment({ onComplete, onNavigate }) {
             })}
           </div>
 
-          <button 
+          <button
             onClick={handleSomaticSubmit}
             className="bg-slate-800 text-white px-10 py-4 font-extrabold rounded-full text-lg shadow-md hover:bg-slate-700 hover:-translate-y-1 transition-all"
           >
@@ -797,14 +773,14 @@ export default function Assessment({ onComplete, onNavigate }) {
 
   return (
     <div className={`bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl shadow-indigo-500/10 rounded-[2.5rem] p-6 md:p-10 max-w-4xl w-full mx-auto transition-all duration-300 ease-in-out transform box-border ${isFading ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'}`}>
-      <div className="w-full flex-col flex h-full"> 
+      <div className="w-full flex-col flex h-full">
         <div className="mb-4 text-[10px] sm:text-xs font-bold tracking-widest text-[#B48EAD] uppercase text-center bg-white/70 py-2 px-4 rounded-full inline-block mx-auto border border-white shadow-sm max-w-[80%] whitespace-normal leading-snug">
           {phase.phase} | {phase.title}
         </div>
         <p className="text-xl md:text-2xl text-slate-700 mb-8 leading-relaxed text-center font-extrabold px-2 md:px-6">
           {phase.text}
         </p>
-        
+
         {/* Optimized Grid Layout for buttons within single viewable space */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {phase.options.map((opt, idx) => (
@@ -818,11 +794,11 @@ export default function Assessment({ onComplete, onNavigate }) {
             </button>
           ))}
         </div>
-        
+
         <div className="mt-8 flex justify-center gap-2">
           {STORY_PHASES.map((_, idx) => (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               className={`h-2 w-2 rounded-full transition-all duration-500 ${idx === currentStep ? 'bg-purple-500 scale-150 shadow-sm' : idx < currentStep ? 'bg-teal-400' : 'bg-slate-300'}`}
             />
           ))}

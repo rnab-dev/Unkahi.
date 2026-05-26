@@ -1,8 +1,3 @@
-/**
- * GratitudeVault.jsx — Safe Moments Vault
- * ==============================================================
- * A safe, offline collection of positive memories and moments of safety.
- */
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 

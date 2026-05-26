@@ -30,8 +30,6 @@
 
 import { supabase } from '../supabaseClient';
 
-// ─── Table Configuration ───────────────────────────────────────────────────────
-
 /**
  * The Supabase table that receives anonymous ML telemetry events.
  *
@@ -62,8 +60,6 @@ import { supabase } from '../supabaseClient';
  */
 const TELEMETRY_TABLE = 'ml_telemetry';
 
-// ─── Anonymous Session ID ──────────────────────────────────────────────────────
-
 /**
  * Returns a stable anonymous session ID for this browser.
  *
@@ -93,8 +89,6 @@ export function ensureAnonymousSession() {
 
   return sessionId;
 }
-
-// ─── Core Telemetry Push ──────────────────────────────────────────────────────
 
 /**
  * Fetches the user's approximate IP address and regional location details
@@ -177,12 +171,16 @@ export async function pushMLTelemetry({
     // Step 2: Fetch GeoIP details for geolocation analytics
     const geo = await getGeoIPDetails();
 
-    // Step 3: Build the whitelist-only record.
+    // Step 3: Inject the cohort routing ID if it exists, otherwise default to 'public'
+    const orgId = sessionStorage.getItem('unkahi_org_id') || 'public';
+
+    // Step 4: Build the whitelist-only record.
     // We deliberately construct this object field-by-field rather than
     // spreading an incoming object — preventing accidental PII leakage
     // if a caller mistakenly passes extra fields.
     const record = {
       session_id:       sessionId,
+      org_id:           orgId,
       event_type:       String(eventType),
       anomaly_detected: Boolean(anomalyDetected),
       emotional_weight: emotionalWeight !== null ? parseFloat(emotionalWeight) : null,
@@ -207,8 +205,6 @@ export async function pushMLTelemetry({
     return { success: false, error: err.message };
   }
 }
-
-// ─── Convenience Wrappers ──────────────────────────────────────────────────────
 
 /**
  * Logs the completion of an assessment session with baseline ML metadata.

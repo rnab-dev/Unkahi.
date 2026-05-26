@@ -102,3 +102,13 @@ body {
   border-radius: 9999px;
 }
 
+@keyframes meshGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.bg-mesh-animated {
+  background-size: 200% 200%;
+  animation: meshGradient 20s ease-in-out infinite;
+}

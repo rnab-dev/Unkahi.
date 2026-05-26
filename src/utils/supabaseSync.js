@@ -1,11 +1,3 @@
-/**
- * supabaseSync.js
- * ==============================================================
- * Hybrid Data Synchronization Framework for Unkahi.
- * Bridges local client storage with Supabase database.
- * Supports instant offline fallback for zero-lag page load.
- */
-
 import { supabase } from '../supabaseClient';
 import { ensureAnonymousSession } from './supabaseTelemetry';
 

@@ -1,14 +1,3 @@
-/**
- * SafetyPlan.jsx — Personal Safety Plan Builder
- * ================================================
- * Based on the Stanley-Brown 6-Step Safety Planning Model.
- * Used by VA PTSD Coach, Beyond Now, Crisis Text Line.
- * 100% local — stored only in localStorage, never uploaded.
- *
- * Language note: We never say "suicidal". We use "very hard moments",
- * "feeling unsafe", "when things get very difficult".
- */
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -138,8 +127,6 @@ const STEPS = [
 const defaultPlan = Object.fromEntries(
   STEPS.map(s => [s.id, s.prefilled ? [...s.prefilled] : []])
 );
-
-// ─── Tag Input Component ───────────────────────────────────────────────────────
 function TagInput({ value = [], onChange, placeholder, suggestions = [] }) {
   const [inputVal, setInputVal] = useState('');
 
@@ -207,8 +194,6 @@ function TagInput({ value = [], onChange, placeholder, suggestions = [] }) {
     </div>
   );
 }
-
-// ─── Step Card ────────────────────────────────────────────────────────────────
 function StepCard({ step, value, onChange, onNext, onBack, isFirst, isLast }) {
   return (
     <motion.div
@@ -254,8 +239,6 @@ function StepCard({ step, value, onChange, onNext, onBack, isFirst, isLast }) {
     </motion.div>
   );
 }
-
-// ─── Plan Summary View ────────────────────────────────────────────────────────
 function PlanSummary({ plan, onEdit, onBack }) {
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
@@ -322,8 +305,6 @@ function PlanSummary({ plan, onEdit, onBack }) {
     </motion.div>
   );
 }
-
-// ─── Main Component ───────────────────────────────────────────────────────────
 export default function SafetyPlan({ onBack }) {
   const [mode, setMode] = useState('loading'); // loading, intro, wizard, summary
   const [stepIndex, setStepIndex] = useState(0);

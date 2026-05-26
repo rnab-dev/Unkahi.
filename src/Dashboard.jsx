@@ -1,17 +1,3 @@
-/**
- * Dashboard.jsx — Unkahi Intelligent Hub
- * =========================================
- * Powered by Edge AI (all computation local, no personal data sent to server).
- *
- * Features:
- *   1. Smart Tool Recommendation  — ML picks your best starting point
- *   2. 7-Day Journey Chart        — Visual trend of your nervous system
- *   3. Anomaly Alert              — Contextual message when shift is detected
- *   4. Trend Direction Badge      — Improving / Stable / Needs Attention
- *   5. Smart Check-In Prompt      — Detects gaps, gently invites return
- *   6. 30-Day Pattern View        — Longer longitudinal sparkline
- */
-
 import React, { useEffect, useState, useRef } from 'react';
 import {
   Chart as ChartJS,
@@ -26,8 +12,6 @@ import { Line } from 'react-chartjs-2';
 import { useEmotionalBaseline } from './hooks/useEmotionalBaseline';
 
 ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip);
-
-// ─── Tool Definitions ────────────────────────────────────────────────────────
 
 const TOOLS = [
   {
@@ -87,8 +71,6 @@ const TOOLS = [
   },
 ];
 
-// ─── ML-Powered Tool Recommendation Logic ────────────────────────────────────
-
 /**
  * Recommends the best tool based on the user's live Edge AI state.
  * Priority 1 (isTriggered + high score) → Breathe (regulate first)
@@ -103,14 +85,10 @@ const getRecommendedTool = (isTriggered, trendDirection, latestScore) => {
   return 'letgo';
 };
 
-// ─── Helper: Format date labels ───────────────────────────────────────────────
-
 const formatDateLabel = (dateStr) => {
   const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 };
-
-// ─── Trend Badge ──────────────────────────────────────────────────────────────
 
 const TREND_CONFIG = {
   improving: {
@@ -135,8 +113,6 @@ const TREND_CONFIG = {
     desc: 'Your nervous system is maintaining a consistent pattern.',
   },
 };
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function CheckInBanner({ daysSince, onNavigate }) {
   if (daysSince <= 1) return null; // checked in today or yesterday — no nudge
@@ -168,8 +144,6 @@ function CheckInBanner({ daysSince, onNavigate }) {
   );
 }
 
-// ─── Main Dashboard ───────────────────────────────────────────────────────────
-
 export default function Dashboard({ assessmentScores = [], onNavigate }) {
   const {
     baseline,
@@ -186,15 +160,11 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
   const [hasSynced, setHasSynced] = useState(false);
   const [syncStatus, setSyncStatus] = useState(null); // 'ok' | 'fail'
   const syncCalledRef = useRef(false);
-
-  // ── Compute latest normalized score ───────────────────────────────────────
   const latestScore = assessmentScores.length > 0
     ? Math.min(100, Math.round(
       (assessmentScores.reduce((a, b) => a + b, 0) / 40) * 100
     ))
     : (last7Days.length > 0 ? last7Days[last7Days.length - 1].score : 50);
-
-  // ── Telemetry status indicator ─────────────────────────────────────────────
   // Assessment.jsx already calls saveScore() + logAssessmentComplete() before
   // navigating here. Dashboard only reads the result — no double-write.
   useEffect(() => {
@@ -203,19 +173,13 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
     setSyncStatus('ok');
     setHasSynced(true);
   }, [assessmentScores]);
-
-  // ── ML Recommendation ──────────────────────────────────────────────────────
   const recommendedToolId = getRecommendedTool(isTriggered, trendDirection, latestScore);
   const recommendedTool = TOOLS.find(t => t.id === recommendedToolId);
   const trendCfg = TREND_CONFIG[trendDirection] || TREND_CONFIG.stable;
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-6 space-y-6 font-sans">
-
-      {/* ── Smart Check-In Prompt ─────────────────────────────────────── */}
       <CheckInBanner daysSince={daysSinceLastCheckIn} onNavigate={onNavigate} />
-
-      {/* ── Top row: Journey + Baseline stats ────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
         {/* Journey Chart Card */}
@@ -232,7 +196,7 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
           </div>
 
           <div className="flex-grow flex items-center justify-center my-4">
-            <button 
+            <button
               onClick={() => onNavigate('analytics')}
               className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-6 py-3 rounded-full font-bold text-sm flex items-center gap-2 transition-all border border-indigo-100 shadow-sm"
             >
@@ -320,8 +284,6 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
           </div>
         </div>
       </div>
-
-      {/* ── ML Tool Recommendation ────────────────────────────────────── */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <span className="text-lg">✨</span>
@@ -350,9 +312,13 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
             </span>
           </div>
         </button>
+        <div className="mt-4 bg-slate-50 border border-slate-100 rounded-2xl p-4 flex gap-3 items-start shadow-sm">
+          <span className="text-xl">💡</span>
+          <p className="text-xs text-slate-500 font-medium leading-relaxed">
+            <strong>Did you know?</strong> Your nervous system's primary job is keeping you alive, not making you happy. When you feel overwhelmed, it's just your body's alarm system working exactly as designed. Healing is learning to gently turn off the false alarms.
+          </p>
+        </div>
       </div>
-
-      {/* ── Empowerment & Education ───────────────────────────────────── */}
       <div className="mb-10">
         <h2 className="text-sm font-black text-slate-500 uppercase tracking-wider mb-3">
           Education & Empowerment
@@ -371,8 +337,6 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
           <span className="text-white/60 group-hover:text-white text-2xl font-black transition-all group-hover:translate-x-1">→</span>
         </button>
       </div>
-
-      {/* ── Advanced Features ───────────────────────────────────────── */}
       <div className="mb-10">
         <h2 className="text-sm font-black text-slate-500 uppercase tracking-wider mb-3">
           Advanced Healing
@@ -407,8 +371,6 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
           </button>
         </div>
       </div>
-
-      {/* ── All Tools ─────────────────────────────────────────────────── */}
       <div>
         <h2 className="text-sm font-black text-slate-500 uppercase tracking-wider mb-3">
           All Tools
@@ -440,8 +402,6 @@ export default function Dashboard({ assessmentScores = [], onNavigate }) {
           })}
         </div>
       </div>
-
-      {/* ── Support & Helplines ───────────────────────────────────────── */}
       <div className="mt-8">
         <button
           onClick={() => onNavigate('support')}

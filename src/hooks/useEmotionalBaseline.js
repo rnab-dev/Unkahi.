@@ -15,8 +15,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { openDB } from 'idb';
 
-// ─── Constants ───────────────────────────────────────────────────────────────
-
 /** Name of the IndexedDB database used for all local ML storage */
 const DB_NAME = 'unkahi_edge_ml';
 
@@ -47,8 +45,6 @@ const EXTENDED_WINDOW_DAYS = 30;
  */
 const ANOMALY_THRESHOLD_SIGMA = 1.5;
 
-// ─── IndexedDB Setup ─────────────────────────────────────────────────────────
-
 /**
  * Opens (or creates) the local IndexedDB instance.
  * Returns the IDBDatabase handle wrapped by the `idb` library.
@@ -66,8 +62,6 @@ const getDB = () =>
       }
     },
   });
-
-// ─── Pure Statistical Helpers ─────────────────────────────────────────────────
 
 /**
  * Computes the arithmetic mean of an array of numbers.
@@ -141,8 +135,6 @@ const computeDaysSinceLastCheckIn = (records) => {
   return Math.round((today - lastDate) / (1000 * 60 * 60 * 24));
 };
 
-// ─── The Hook ────────────────────────────────────────────────────────────────
-
 /**
  * useEmotionalBaseline
  * ─────────────────────
@@ -166,8 +158,6 @@ export function useEmotionalBaseline() {
   const [daysSinceLastCheckIn, setDaysSinceLastCheckIn] = useState(Infinity);
   const [isLoading, setIsLoading]         = useState(true);
   const [error, setError]                 = useState(null);
-
-  // ── Load history on mount ──────────────────────────────────────────────────
   useEffect(() => {
     let mounted = true;
 
@@ -192,8 +182,6 @@ export function useEmotionalBaseline() {
     loadHistory();
     return () => { mounted = false; };
   }, []);
-
-  // ── Core computation ───────────────────────────────────────────────────────
 
   /**
    * Recalculates the rolling average and anomaly flag from the full history.
@@ -233,8 +221,6 @@ export function useEmotionalBaseline() {
     const triggered = sd > 0 && deviationMagnitude > ANOMALY_THRESHOLD_SIGMA * sd;
     setIsTriggered(triggered);
   }, []);
-
-  // ── Public API ─────────────────────────────────────────────────────────────
 
   /**
    * Persists today's normalized assessment score (0–100) to local IndexedDB.

@@ -40,11 +40,11 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
 
   return (
     <div className={`relative min-h-screen w-full flex flex-col items-center transition-all duration-500 ease-out transform ${isTransitioning ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'} overflow-hidden`}>
-      
+
       {/* Admin Session Banner (Enterprise Feature) */}
       <AnimatePresence>
         {isAdminLoggedIn && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
@@ -56,13 +56,13 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
               <span className="text-xs font-medium text-slate-300">You are currently logged into the Central Command.</span>
             </div>
             <div className="flex gap-3">
-              <button 
+              <button
                 onClick={() => onNavigate('admin')}
                 className="text-[10px] font-black uppercase tracking-widest bg-white text-slate-900 px-4 py-1.5 rounded-md hover:bg-slate-200 transition-colors"
               >
                 Return to Dashboard
               </button>
-              <button 
+              <button
                 onClick={async () => {
                   await supabase.auth.signOut();
                   setIsAdminLoggedIn(false);
@@ -132,6 +132,7 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
           </div>
         </nav>
 
+
         <div className="w-full max-w-4xl text-center space-y-8 md:space-y-10 mb-20 md:mb-32 px-4 relative">
           {/* Subtle glow behind the text to enhance readability over the noise */}
           <div className="absolute inset-0 bg-white/20 blur-3xl -z-10 rounded-[100px] pointer-events-none" />
@@ -195,27 +196,140 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
         </div>
 
         {/* Detailed Project Insights & Clinical Blueprint */}
-        <div className="w-full bg-white/40 backdrop-blur-md rounded-[3rem] border border-white/50 p-10 md:p-16 mb-24 shadow-xl shadow-indigo-500/5">
-          <h3 className="text-3xl font-extrabold text-slate-700 mb-6 text-center">About the Project</h3>
-          <p className="text-lg text-slate-600 leading-relaxed font-medium text-center max-w-4xl mx-auto mb-16">
-            This private, algorithmic tool analyzes your nervous system's behavior across a detailed 24-hour narrative. By exploring how you wake, move through the day, and prepare for sleep, we generate a highly accurate, non-invasive psychological footprint, distinguishing between routine stress and deep-seated fawning, hypervigilance, and somatic dissociation responses.
-          </p>
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="w-full relative z-10 mb-24 px-4 md:px-0"
+        >
+          {/* Ambient Glow behind the section */}
+          <div className="absolute inset-0 bg-gradient-to-b from-indigo-100/20 via-purple-100/20 to-teal-100/20 blur-3xl -z-10 rounded-[4rem]" />
+          
+          <div className="bg-white/40 backdrop-blur-xl rounded-[3rem] border border-white/60 p-8 md:p-16 shadow-[0_8px_32px_rgba(31,38,135,0.05)] overflow-hidden relative">
+            {/* Decorative Top Left Blob */}
+            <div className="absolute -top-24 -left-24 w-64 h-64 bg-teal-300/20 rounded-full blur-[60px] pointer-events-none" />
+            {/* Decorative Bottom Right Blob */}
+            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-purple-300/20 rounded-full blur-[60px] pointer-events-none" />
 
-          <h3 className="text-2xl font-extrabold text-slate-700 mb-8 text-center border-b border-white/50 pb-4 max-w-sm mx-auto">Clinical Pillars</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {pillars.map((pillar, idx) => (
-              <div key={idx} className="bg-white/60 backdrop-blur-lg border border-white p-8 rounded-[2.5rem] flex flex-col shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="text-4xl drop-shadow-sm">{pillar.icon}</div>
-                  <h4 className="text-xl font-black text-[#5C6E84] leading-tight">{pillar.title}</h4>
-                </div>
-                <p className="text-slate-600 mb-6 leading-relaxed font-medium flex-grow">{pillar.desc}</p>
-                <div className="bg-[#A3BE8C]/10 rounded-2xl p-4 border border-[#A3BE8C]/20">
-                  <p className="text-xs font-black text-[#A3BE8C] uppercase tracking-wider mb-1">Actionable Tip</p>
-                  <p className="text-sm text-slate-700 font-bold">{pillar.tip}</p>
-                </div>
-              </div>
-            ))}
+            <h3 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-500 mb-8 text-center tracking-tight">
+              About the Project
+            </h3>
+            
+            <p className="text-lg md:text-xl text-slate-600 leading-relaxed font-medium text-center max-w-4xl mx-auto mb-20 drop-shadow-sm relative">
+              <span className="text-4xl absolute -top-6 -left-6 text-slate-200 pointer-events-none">"</span>
+              This private, algorithmic tool analyzes your nervous system's behavior across a detailed 24-hour narrative. By exploring how you wake, move through the day, and prepare for sleep, we generate a highly accurate, non-invasive psychological footprint, distinguishing between routine stress and deep-seated fawning, hypervigilance, and somatic dissociation responses.
+              <span className="text-4xl absolute -bottom-8 -right-4 text-slate-200 pointer-events-none">"</span>
+            </p>
+
+            <div className="flex items-center justify-center gap-4 mb-12">
+              <div className="h-px w-12 bg-gradient-to-r from-transparent to-slate-300" />
+              <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Core Clinical Pillars</h3>
+              <div className="h-px w-12 bg-gradient-to-l from-transparent to-slate-300" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 relative z-10">
+              {pillars.map((pillar, idx) => {
+                // Dynamically assign subtle glow colors based on index to make them pop
+                const glowColors = ['bg-rose-400/20', 'bg-blue-400/20', 'bg-amber-400/20', 'bg-emerald-400/20'];
+                const accentTextColors = ['text-rose-600', 'text-blue-600', 'text-amber-600', 'text-emerald-600'];
+                const accentBgColors = ['bg-rose-50', 'bg-blue-50', 'bg-amber-50', 'bg-emerald-50'];
+                const accentBorderColors = ['border-rose-100', 'border-blue-100', 'border-amber-100', 'border-emerald-100'];
+                const glow = glowColors[idx % glowColors.length];
+                const tColor = accentTextColors[idx % accentTextColors.length];
+                const bColor = accentBgColors[idx % accentBgColors.length];
+                const borderC = accentBorderColors[idx % accentBorderColors.length];
+
+                return (
+                  <motion.div 
+                    key={idx} 
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: idx * 0.1 }}
+                    whileHover={{ y: -8, scale: 1.02 }}
+                    className="group relative bg-white/70 backdrop-blur-md border border-white/80 p-8 rounded-[2.5rem] flex flex-col shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-300 z-10"
+                  >
+                    {/* Hover Glow Behind Card */}
+                    <div className={`absolute inset-0 rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl -z-10 ${glow}`} />
+                    
+                    <div className="flex items-start gap-5 mb-5">
+                      <div className="text-4xl md:text-5xl drop-shadow-md group-hover:scale-110 transition-transform duration-300 origin-bottom-left">
+                        {pillar.icon}
+                      </div>
+                      <h4 className="text-xl md:text-2xl font-black text-slate-700 leading-tight mt-1 group-hover:text-slate-900 transition-colors">
+                        {pillar.title}
+                      </h4>
+                    </div>
+                    
+                    <p className="text-slate-600 mb-8 leading-relaxed font-medium flex-grow text-sm md:text-base">
+                      {pillar.desc}
+                    </p>
+                    
+                    <div className={`mt-auto rounded-2xl p-5 border ${bColor} ${borderC} group-hover:bg-white transition-colors duration-300 shadow-inner group-hover:shadow-sm`}>
+                      <p className={`text-[10px] font-black uppercase tracking-widest mb-1.5 flex items-center gap-2 ${tColor}`}>
+                        <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                        Actionable Tip
+                      </p>
+                      <p className="text-sm text-slate-800 font-bold leading-snug">{pillar.tip}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Enterprise Pricing Section */}
+        <div className="w-full max-w-5xl mx-auto mb-24 px-4">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl md:text-4xl font-black text-slate-800 mb-4">Scale Healing Across Your Organization</h3>
+            <p className="text-slate-600 font-medium max-w-2xl mx-auto">Zero-knowledge telemetry and enterprise-grade isolation. Deploy Unkahi to your cohort today.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+
+            {/* Tier 1 */}
+            <div className="bg-white/40 backdrop-blur-md border border-slate-200/50 rounded-3xl p-8 shadow-sm flex flex-col">
+              <span className="text-sm font-black uppercase tracking-widest text-slate-400 mb-2 block">Individual</span>
+              <h4 className="text-4xl font-black text-slate-800 mb-2">₹0<span className="text-sm font-medium text-slate-500">/forever</span></h4>
+              <p className="text-slate-500 text-sm mb-6 pb-6 border-b border-slate-200/50">For personal healing and grounding.</p>
+              <ul className="space-y-4 mb-8 flex-grow">
+                <li className="flex gap-3 text-sm text-slate-700 font-medium"><span className="text-teal-500">✓</span> Full access to Healing Tools</li>
+                <li className="flex gap-3 text-sm text-slate-700 font-medium"><span className="text-teal-500">✓</span> Local-first Mood Diary</li>
+                <li className="flex gap-3 text-sm text-slate-700 font-medium"><span className="text-teal-500">✓</span> 100% On-device Privacy</li>
+              </ul>
+              <button onClick={() => onNavigate('assessment')} className="w-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-colors">Start Healing</button>
+            </div>
+
+            {/* Tier 2: Pro */}
+            <div className="bg-gradient-to-b from-indigo-500 to-indigo-700 border border-indigo-400 rounded-3xl p-8 shadow-xl flex flex-col relative transform md:-translate-y-4">
+              <div className="absolute top-0 right-8 -translate-y-1/2 bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-md">Most Popular</div>
+              <span className="text-sm font-black uppercase tracking-widest text-indigo-200 mb-2 block">Pro Clinic</span>
+              <h4 className="text-4xl font-black text-white mb-2">₹4,999<span className="text-sm font-medium text-indigo-300">/mo</span></h4>
+              <p className="text-indigo-200 text-sm mb-6 pb-6 border-b border-indigo-400/50">For small clinics and therapy groups.</p>
+              <ul className="space-y-4 mb-8 flex-grow">
+                <li className="flex gap-3 text-sm text-white font-medium"><span className="text-indigo-300">✓</span> Up to 50 active users</li>
+                <li className="flex gap-3 text-sm text-white font-medium"><span className="text-indigo-300">✓</span> Basic Cohort Dashboard</li>
+                <li className="flex gap-3 text-sm text-white font-medium"><span className="text-indigo-300">✓</span> Monthly CSV Exports</li>
+              </ul>
+              <button onClick={() => onNavigate('b2bsignup')} className="w-full bg-white hover:bg-indigo-50 text-indigo-600 font-bold py-3 rounded-xl transition-colors shadow-lg">Apply for Access</button>
+            </div>
+
+            {/* Tier 3 */}
+            <div className="bg-white/40 backdrop-blur-md border border-slate-200/50 rounded-3xl p-8 shadow-sm flex flex-col">
+              <span className="text-sm font-black uppercase tracking-widest text-slate-400 mb-2 block">Enterprise B2B</span>
+              <h4 className="text-4xl font-black text-slate-800 mb-2">₹19,999<span className="text-sm font-medium text-slate-500">/mo</span></h4>
+              <p className="text-slate-500 text-sm mb-6 pb-6 border-b border-slate-200/50">For universities and massive organizations.</p>
+              <ul className="space-y-4 mb-8 flex-grow">
+                <li className="flex gap-3 text-sm text-slate-700 font-medium"><span className="text-teal-500">✓</span> Unlimited users</li>
+                <li className="flex gap-3 text-sm text-slate-700 font-medium"><span className="text-teal-500">✓</span> Real-time ML Telemetry</li>
+                <li className="flex gap-3 text-sm text-slate-700 font-medium"><span className="text-teal-500">✓</span> Predictive Crisis Alerts</li>
+                <li className="flex gap-3 text-sm text-slate-700 font-medium"><span className="text-teal-500">✓</span> Isolated Data Enclave</li>
+              </ul>
+              <button onClick={() => onNavigate('b2bsignup')} className="w-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-colors">Contact Sales</button>
+            </div>
+
           </div>
         </div>
 
@@ -271,20 +385,39 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
         </div>
 
         {/* Global Footer */}
-        <footer className="mt-20 w-full border-t border-slate-200/50 pt-8 pb-4 flex flex-col md:flex-row items-center justify-between px-4">
-          <button
-            onClick={() => onNavigate('mydata')}
-            className="flex items-center gap-3 opacity-60 hover:opacity-100 transition-opacity group"
-          >
-            <span className="text-xl">📊</span>
-            <div className="text-left">
-              <p className="text-xs font-black uppercase tracking-widest text-slate-500">Your Data</p>
-              <p className="text-slate-700 font-bold hover:text-indigo-600 transition-colors text-sm group-hover:text-indigo-600">
-                View Unified Insights Dashboard →
-              </p>
+        <footer className="mt-20 w-full border-t border-slate-200/50 pt-12 pb-8 flex flex-col items-center justify-center px-4 relative z-10 bg-white/30 backdrop-blur-md rounded-t-[3rem]">
+          <div className="flex flex-col md:flex-row items-center justify-between w-full max-w-5xl mb-8 gap-8">
+            <div className="text-center md:text-left">
+              <h1 className="flex items-center justify-center md:justify-start gap-1 text-slate-800 mb-2">
+                <span className="text-2xl tracking-tight leading-none" style={{ fontFamily: '"London", serif', fontWeight: 900 }}>UN</span>
+                <div className="h-5 w-[2px] bg-slate-800 mx-1" />
+                <span className="text-2xl tracking-tighter leading-none" style={{ fontFamily: '"Inknut Antiqua", serif', fontWeight: 800 }}>कही</span>
+              </h1>
+              <p className="text-[0.65rem] font-bold text-slate-500 uppercase tracking-widest">For the society by ASA</p>
             </div>
-          </button>
-          <p className="text-xs font-medium text-slate-400 mt-6 md:mt-0">
+
+            <div className="flex flex-wrap justify-center gap-6">
+              <button
+                onClick={() => onNavigate('b2bsignup')}
+                className="text-xs font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-800 transition-colors"
+              >
+                Apply for B2B SaaS
+              </button>
+              <button
+                onClick={() => onNavigate('admin')}
+                className="text-xs font-black uppercase tracking-widest text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                Organization Login
+              </button>
+              <button
+                onClick={() => onNavigate('admin')}
+                className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 transition-colors"
+              >
+                Super Admin Login
+              </button>
+            </div>
+          </div>
+          <p className="text-xs font-medium text-slate-400">
             Unkahi © {new Date().getFullYear()} · Edge-AI Privacy
           </p>
         </footer>

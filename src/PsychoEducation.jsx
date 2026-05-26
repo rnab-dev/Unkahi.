@@ -1,8 +1,3 @@
-/**
- * PsychoEducation.jsx — Nervous System Education Library
- * ==============================================================
- * 10-card swipable education module. Validated trauma-informed psychoeducation.
- */
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchPsychoEducationCards } from './utils/supabaseSync';

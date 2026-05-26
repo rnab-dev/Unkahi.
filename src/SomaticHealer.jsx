@@ -57,8 +57,6 @@ export default function SomaticHealer({ onBack }) {
     </div>
   );
 }
-
-// ─── Intro Phase ─────────────────────────────────────────────────────────────
 function IntroPhase({ onStart }) {
   return (
     <motion.div 
@@ -81,8 +79,6 @@ function IntroPhase({ onStart }) {
     </motion.div>
   );
 }
-
-// ─── Phase 1: Polyvagal Eye Reset ────────────────────────────────────────────
 function PolyvagalPhase({ onNext }) {
   const [step, setStep] = useState(0); // 0: init, 1: left, 2: center, 3: right, 4: done
   const [timeLeft, setTimeLeft] = useState(30);
@@ -157,8 +153,6 @@ function PolyvagalPhase({ onNext }) {
     </motion.div>
   );
 }
-
-// ─── Phase 2: Progressive Muscle Relaxation (PMR) ─────────────────────────────
 const BODY_PARTS = [
   { id: 'jaw', label: 'Jaw & Face' },
   { id: 'shoulders', label: 'Shoulders & Neck' },
