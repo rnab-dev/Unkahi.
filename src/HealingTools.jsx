@@ -4,9 +4,10 @@ import { supabase } from './supabaseClient';
 import { useLocalNLP } from './hooks/useLocalNLP';
 
 export function BreathingRoom({ onBack }) {
-  const [phase, setPhase] = useState('Breathe In');
+  const [phase, setPhase] = useState('Inhale');
+  const [secondsLeft, setSecondsLeft] = useState(4);
   const [cycleIndex, setCycleIndex] = useState(0);
-
+ 
   // 4-7-8 Breathing Cycle
   const breathingVariants = {
     inhale: {
@@ -28,49 +29,52 @@ export function BreathingRoom({ onBack }) {
       transition: { duration: 8, ease: "easeInOut" }
     }
   };
-
+ 
   useEffect(() => {
     let currentPhase = 'inhale';
-    let timeout;
-
-    const runCycle = () => {
-      if (currentPhase === 'inhale') {
-        setPhase('Inhale (4s)');
-        setCycleIndex(1); // triggers 'inhale' variant
-        timeout = setTimeout(() => {
+    let timeLeft = 4;
+    setPhase('Inhale');
+    setSecondsLeft(4);
+    setCycleIndex(1); // Start 'inhale' variant
+ 
+    const interval = setInterval(() => {
+      timeLeft -= 1;
+      
+      if (timeLeft <= 0) {
+        if (currentPhase === 'inhale') {
           currentPhase = 'hold';
-          runCycle();
-        }, 4000);
-      } else if (currentPhase === 'hold') {
-        setPhase('Hold (7s)');
-        setCycleIndex(2); // triggers 'hold' variant
-        timeout = setTimeout(() => {
+          timeLeft = 7;
+          setPhase('Hold');
+          setSecondsLeft(7);
+          setCycleIndex(2); // 'hold' variant
+        } else if (currentPhase === 'hold') {
           currentPhase = 'exhale';
-          runCycle();
-        }, 7000);
-      } else if (currentPhase === 'exhale') {
-        setPhase('Exhale (8s)');
-        setCycleIndex(3); // triggers 'exhale' variant
-        timeout = setTimeout(() => {
+          timeLeft = 8;
+          setPhase('Exhale');
+          setSecondsLeft(8);
+          setCycleIndex(3); // 'exhale' variant
+        } else if (currentPhase === 'exhale') {
           currentPhase = 'inhale';
-          runCycle();
-        }, 8000);
+          timeLeft = 4;
+          setPhase('Inhale');
+          setSecondsLeft(4);
+          setCycleIndex(1); // 'inhale' variant
+        }
+      } else {
+        setSecondsLeft(timeLeft);
       }
-    };
-
-    // start slightly after mount for smooth entry
-    timeout = setTimeout(runCycle, 1000);
-
-    return () => clearTimeout(timeout);
+    }, 1000);
+ 
+    return () => clearInterval(interval);
   }, []);
-
+ 
   const getVariant = () => {
     if (cycleIndex === 1) return 'inhale';
     if (cycleIndex === 2) return 'hold';
     if (cycleIndex === 3) return 'exhale';
     return 'exhale'; // default
   };
-
+ 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -83,14 +87,14 @@ export function BreathingRoom({ onBack }) {
           ← Return
         </button>
       </div>
-
+ 
       <div className="flex flex-col items-center justify-center text-center w-full pb-16 relative z-10">
         <h2 className="text-3xl sm:text-4xl font-extrabold text-pink-600 tracking-tight drop-shadow-sm">The Blooming Lotus</h2>
         <p className="text-slate-600 mt-4 text-lg font-medium max-w-md">
           Follow the soft expansion of the petals to reset your vagus nerve.
         </p>
       </div>
-
+ 
       <div className="relative w-48 h-48 sm:w-64 sm:h-64 flex items-center justify-center mb-24 mx-auto">
         {/* Core Animated Breathing Orb */}
         <motion.div
@@ -114,19 +118,20 @@ export function BreathingRoom({ onBack }) {
           className="absolute inset-8 rounded-full border border-white/30"
           style={{ opacity: 0.3 }}
         />
-
+ 
         {/* Center label */}
         <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
           <AnimatePresence mode="popLayout">
             <motion.div
-              key={phase}
-              initial={{ opacity: 0, scale: 0.8 }}
+              key={`${phase}-${secondsLeft}`}
+              initial={{ opacity: 0.3, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.2 }}
-              transition={{ duration: 0.5 }}
-              className="bg-white/80 backdrop-blur-xl border border-white/70 shadow-lg rounded-full px-8 py-4"
+              exit={{ opacity: 0, scale: 1.05 }}
+              transition={{ duration: 0.25 }}
+              className="bg-white/85 backdrop-blur-xl border border-white/70 shadow-lg rounded-full px-4 py-2 sm:px-7 sm:py-3.5 text-center min-w-[90px] sm:min-w-[150px] flex flex-col justify-center items-center"
             >
-              <span className="text-2xl font-black text-slate-700 tracking-wide">{phase}</span>
+              <span className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest block mb-0.5">{phase}</span>
+              <span className="text-sm sm:text-2xl font-black text-slate-800 tracking-wide tabular-nums">{secondsLeft}s</span>
             </motion.div>
           </AnimatePresence>
         </div>
