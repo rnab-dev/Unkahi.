@@ -469,7 +469,7 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
                 <div className="h-5 w-[2px] bg-slate-800 mx-1" />
                 <span className="text-2xl tracking-tighter leading-none" style={{ fontFamily: '"Inknut Antiqua", serif', fontWeight: 800 }}>कही</span>
               </h1>
-              <p className="text-[0.65rem] font-bold text-slate-500 uppercase tracking-widest">For the society by ASA</p>
+              <p className="text-[0.65rem] font-bold text-slate-500 uppercase tracking-widest">For the society by Λ P</p>
             </div>
 
             <div className="flex flex-wrap justify-center gap-6">
