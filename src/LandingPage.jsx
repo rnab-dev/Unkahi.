@@ -12,6 +12,24 @@ const DEFAULT_PILLARS = [
 
 const SHUFFLE_WORDS = ['word.', 'sentence.', 'syllable.', 'thing.', 'sound.'];
 
+const TICKER_ITEMS = [
+  "100% On-Device Privacy",
+  "No Signups Required",
+  "Somatic Trauma Anchors",
+  "Binaural EMDR Audio",
+  "Paced Lotus Breathing",
+  "Interactive Grounding Matrix",
+  "Zero-Knowledge Storage",
+  "Cognitive Release Journal",
+  "Free & Anonymous Forever",
+  "Vagus Nerve Regulation",
+  "Somatic Muscle Release",
+  "Private Crisis Safety Plan",
+  "Brave Bear Kids Mode",
+  "Empathetic Local Triage",
+  "Zero Cookies & Trackers"
+];
+
 export default function LandingPage({ onNavigate, isTransitioning }) {
   const [pillars, setPillars] = useState(DEFAULT_PILLARS);
   const [wordIndex, setWordIndex] = useState(0);
@@ -160,11 +178,36 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
             A gentle, 100% private space to understand your heavy emotions—no direct questions, no reliving the past.
           </p>
 
+          {/* Eye-catching Running Marquee Ticker - Pure Floating Text */}
+          <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] overflow-hidden py-2 my-6">
+            {/* Soft edge fades to blend text horizontally with the page */}
+            <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-slate-50/70 to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-slate-50/70 to-transparent z-10 pointer-events-none" />
+            
+            <div className="flex whitespace-nowrap animate-marquee gap-12">
+              <div className="flex gap-12 shrink-0 justify-around min-w-full">
+                {TICKER_ITEMS.map((item, idx) => (
+                  <span key={idx} className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-slate-500/80 flex items-center gap-2 select-none">
+                    <span className="text-teal-600/70 text-xs md:text-sm animate-pulse">✦</span> {item}
+                  </span>
+                ))}
+              </div>
+              {/* Identical clone for seamless loops */}
+              <div className="flex gap-12 shrink-0 justify-around min-w-full">
+                {TICKER_ITEMS.map((item, idx) => (
+                  <span key={`dup-${idx}`} className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-slate-500/80 flex items-center gap-2 select-none">
+                    <span className="text-teal-600/70 text-xs md:text-sm animate-pulse">✦</span> {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div className="pt-10 flex flex-col items-center w-full">
-            <div className="relative group w-full px-4 sm:w-auto sm:px-0">
+            <div className="relative group w-full px-4 flex justify-center sm:w-auto sm:px-0">
               <button
                 onClick={() => onNavigate('assessment')}
-                className="relative w-full sm:w-auto justify-center z-10 bg-gradient-to-b from-teal-500 to-teal-700 text-white px-8 py-4 md:px-12 md:py-5 font-black rounded-full text-lg md:text-2xl shadow-[0_8px_30px_rgba(13,148,136,0.3)] hover:shadow-[0_12px_40px_rgba(13,148,136,0.5)] hover:-translate-y-1 transition-all duration-300 border border-teal-400/50 tracking-wide flex items-center gap-3 overflow-hidden"
+                className="relative w-auto justify-center z-10 bg-gradient-to-b from-teal-500 to-teal-700 text-white px-6 py-3.5 md:px-12 md:py-5 font-black rounded-full text-base md:text-2xl shadow-[0_8px_30px_rgba(13,148,136,0.3)] hover:shadow-[0_12px_40px_rgba(13,148,136,0.5)] hover:-translate-y-1 transition-all duration-300 border border-teal-400/50 tracking-wide flex items-center gap-3 overflow-hidden whitespace-nowrap"
               >
                 {/* Subtle shine sweep on hover */}
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
@@ -439,6 +482,147 @@ export default function LandingPage({ onNavigate, isTransitioning }) {
             </button>
           </div>
         </div>
+
+        {/* Somatic & Nervous System Resources Guide Section */}
+        <section className="w-full max-w-5xl mx-auto mt-24 px-4 relative z-10">
+          <div className="text-center mb-12 animate-fade-in">
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-teal-600 bg-teal-50 border border-teal-100 px-3.5 py-1 rounded-full">
+              Somatic Resource Guide
+            </span>
+            <h3 className="text-3xl md:text-5xl font-black text-slate-800 mt-4 mb-4 tracking-tight">
+              Understanding Nervous System Regulation
+            </h3>
+            <p className="text-slate-600 font-medium max-w-2xl mx-auto text-sm md:text-base">
+              Learn the science behind somatic healing and how intentional body-centered tools help guide your physiological state back to baseline safety.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-white/60 backdrop-blur-xl border border-white/60 p-8 rounded-[2rem] shadow-sm flex flex-col hover:shadow-md transition-shadow duration-300">
+              <div className="flex items-center gap-4 mb-4">
+                <span className="text-3xl">🫁</span>
+                <h4 className="text-lg font-black text-slate-800">Paced Breathing & Vagal Stimulation</h4>
+              </div>
+              <p className="text-slate-600 text-sm leading-relaxed font-medium mb-4 flex-grow">
+                Under acute stress, our breathing naturally becomes shallow and rapid, signaling the brain's threat-detection centers to remain hyper-active. Rhythmic deep breathing—such as pacing your breath with a blooming visual anchor—directly stimulates the <strong>vagus nerve</strong>. This triggers the parasympathetic nervous system to slow down heart rate and lower blood pressure, communicating safety back to your body.
+              </p>
+              <div className="bg-teal-50/50 border border-teal-100/50 p-4 rounded-2xl text-xs font-bold text-teal-900 mt-auto">
+                💡 <strong>Application:</strong> Use the <strong>Blooming Lotus</strong> paced breathing reset when experiencing hyperarousal or general panic.
+              </div>
+            </div>
+
+            <div className="bg-white/60 backdrop-blur-xl border border-white/60 p-8 rounded-[2rem] shadow-sm flex flex-col hover:shadow-md transition-shadow duration-300">
+              <div className="flex items-center gap-4 mb-4">
+                <span className="text-3xl">🧱</span>
+                <h4 className="text-lg font-black text-slate-800">Sensory Grounding & Cognitive Anchors</h4>
+              </div>
+              <p className="text-slate-600 text-sm leading-relaxed font-medium mb-4 flex-grow">
+                Hypervigilance and intrusive racing thoughts pull your focus away from physical reality and lock it inside mental threat-loops. Sensory grounding utilizes dual-attention tasks (such as focusing on specific textures, sounds, and visual objects in your immediate surroundings). By systematically cataloging concrete sensory data, you distract the amygdala and anchor your brain in the safety of the present moment.
+              </p>
+              <div className="bg-purple-50/50 border border-purple-100/50 p-4 rounded-2xl text-xs font-bold text-purple-900 mt-auto">
+                💡 <strong>Application:</strong> Try the <strong>Grounding Matrix</strong> interactive cards when feeling disconnected, floaty, or highly anxious.
+              </div>
+            </div>
+
+            <div className="bg-white/60 backdrop-blur-xl border border-white/60 p-8 rounded-[2rem] shadow-sm flex flex-col hover:shadow-md transition-shadow duration-300">
+              <div className="flex items-center gap-4 mb-4">
+                <span className="text-3xl">💨</span>
+                <h4 className="text-lg font-black text-slate-800">Expressive Externalization (Cognitive Offloading)</h4>
+              </div>
+              <p className="text-slate-600 text-sm leading-relaxed font-medium mb-4 flex-grow">
+                Suppressing or ruminating on heavy thoughts keeps them actively cycling within your neurological pathways. Writing out your internal dialogue without editing or censoring allows you to externalize these thoughts. By visually dissolving, fading, or virtually "burning" the text once finished, you create a powerful symbolic closure that signals to the brain that the thought has been released.
+              </p>
+              <div className="bg-pink-50/50 border border-pink-100/50 p-4 rounded-2xl text-xs font-bold text-pink-900 mt-auto">
+                💡 <strong>Application:</strong> Use the <strong>Let Go Box</strong> to write down self-blame, intrusive memories, or hidden frustrations.
+              </div>
+            </div>
+
+            <div className="bg-white/60 backdrop-blur-xl border border-white/60 p-8 rounded-[2rem] shadow-sm flex flex-col hover:shadow-md transition-shadow duration-300">
+              <div className="flex items-center gap-4 mb-4">
+                <span className="text-3xl">🎧</span>
+                <h4 className="text-lg font-black text-slate-800">Bilateral Audio Stimulation & EMDR Mechanics</h4>
+              </div>
+              <p className="text-slate-600 text-sm leading-relaxed font-medium mb-4 flex-grow">
+                Bilateral stimulation (the core mechanism of EMDR therapy) involves alternating sensory cues between the left and right hemispheres of the brain. When you listen to a binaural beat that moves left-to-right, it demands portioned capacity of your working memory. This reduces the vividness and emotional intensity of distressing memories or panic loops, allowing your mind to process them calmly.
+              </p>
+              <div className="bg-indigo-50/50 border border-indigo-100/50 p-4 rounded-2xl text-xs font-bold text-indigo-900 mt-auto">
+                💡 <strong>Application:</strong> Use <strong>Binaural EMDR Bilateral Stimulation</strong> with headphones to settle intense physical worry.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Interactive FAQ Section */}
+        <section className="w-full max-w-4xl mx-auto mt-24 px-4 relative z-10">
+          <div className="text-center mb-12">
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-indigo-600 bg-indigo-50 border border-indigo-100 px-3.5 py-1 rounded-full">
+              Common Questions
+            </span>
+            <h3 className="text-3xl md:text-5xl font-black text-slate-800 mt-4 mb-4 tracking-tight">
+              Frequently Asked Questions
+            </h3>
+            <p className="text-slate-600 font-medium max-w-2xl mx-auto text-sm md:text-base">
+              Find answers to common questions about Unkahi, somatic healing, and our strict local privacy guarantees.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <details className="group border border-slate-200/60 bg-white/50 backdrop-blur-md rounded-3xl p-6 transition-all duration-300 open:bg-indigo-50/30 open:border-indigo-100/80 shadow-sm">
+              <summary className="flex items-center justify-between font-extrabold text-slate-700 cursor-pointer list-none outline-none select-none text-base md:text-lg [&::-webkit-details-marker]:hidden">
+                <span>What is somatic healing and how does it work?</span>
+                <span className="text-indigo-500 transition-transform duration-300 group-open:rotate-45 text-2xl font-light leading-none">＋</span>
+              </summary>
+              <div className="mt-4 text-slate-600 text-sm md:text-base leading-relaxed border-t border-slate-100 pt-4 font-medium">
+                Somatic healing is a body-centered therapeutic approach focusing on the connection between the mind and body. Unlike traditional talk therapy, which deals primarily with cognitive narratives, somatic healing addresses how stress, worry, and trauma are physically stored in the autonomic nervous system. By using body-centered exercises like paced breathing, somatic muscle release, and sensory grounding, it helps release physical tension, lower cortisol levels, and restore a sense of baseline emotional safety.
+              </div>
+            </details>
+
+            <details className="group border border-slate-200/60 bg-white/50 backdrop-blur-md rounded-3xl p-6 transition-all duration-300 open:bg-indigo-50/30 open:border-indigo-100/80 shadow-sm">
+              <summary className="flex items-center justify-between font-extrabold text-slate-700 cursor-pointer list-none outline-none select-none text-base md:text-lg [&::-webkit-details-marker]:hidden">
+                <span>Is my data truly private and anonymous on Unkahi?</span>
+                <span className="text-indigo-500 transition-transform duration-300 group-open:rotate-45 text-2xl font-light leading-none">＋</span>
+              </summary>
+              <div className="mt-4 text-slate-600 text-sm md:text-base leading-relaxed border-t border-slate-100 pt-4 font-medium">
+                Yes, absolutely. Unkahi operates on a local-first, zero-knowledge architecture. All of your interactive mood records, somatic load scores, and personalized safety plans are kept entirely on-device inside your browser's secure sandbox. None of your inputs or answers are sent to any external server. We only capture approximate, high-level regional location analytics to help us measure community reach, but your personal data and sessions are 100% private, anonymous, and local.
+              </div>
+            </details>
+
+            <details className="group border border-slate-200/60 bg-white/50 backdrop-blur-md rounded-3xl p-6 transition-all duration-300 open:bg-indigo-50/30 open:border-indigo-100/80 shadow-sm">
+              <summary className="flex items-center justify-between font-extrabold text-slate-700 cursor-pointer list-none outline-none select-none text-base md:text-lg [&::-webkit-details-marker]:hidden">
+                <span>What are the Fight, Flight, Freeze, and Fawn stress responses?</span>
+                <span className="text-indigo-500 transition-transform duration-300 group-open:rotate-45 text-2xl font-light leading-none">＋</span>
+              </summary>
+              <div className="mt-4 text-slate-600 text-sm md:text-base leading-relaxed border-t border-slate-100 pt-4 font-medium">
+                These represent the four primary defense mechanisms of the autonomic nervous system when encountering stress or threat:
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>Fight/Flight:</strong> Active mobilization responses that speed up heart rate, causing anxiety, worry, anger, or hypervigilance.</li>
+                  <li><strong>Freeze:</strong> An immobilization response causing physical numbness, feeling "spaced out," or emotional dissociation.</li>
+                  <li><strong>Fawn:</strong> A behavioral coping mechanism where you suppress your own boundaries and try to please others to prevent conflict.</li>
+                </ul>
+              </div>
+            </details>
+
+            <details className="group border border-slate-200/60 bg-white/50 backdrop-blur-md rounded-3xl p-6 transition-all duration-300 open:bg-indigo-50/30 open:border-indigo-100/80 shadow-sm">
+              <summary className="flex items-center justify-between font-extrabold text-slate-700 cursor-pointer list-none outline-none select-none text-base md:text-lg [&::-webkit-details-marker]:hidden">
+                <span>How does EMDR bilateral stimulation audio help in emotional regulation?</span>
+                <span className="text-indigo-500 transition-transform duration-300 group-open:rotate-45 text-2xl font-light leading-none">＋</span>
+              </summary>
+              <div className="mt-4 text-slate-600 text-sm md:text-base leading-relaxed border-t border-slate-100 pt-4 font-medium">
+                Bilateral stimulation involves alternating sensory input (such as sound) back and forth between the left and right sides of your body. In EMDR (Eye Movement Desensitization and Reprocessing), this dual attention taxes your working memory. When you focus on a distressing thought while listening to alternating bilateral tones, your brain is forced to allocate cognitive bandwidth to the sensory input, decreasing the vividness and emotional intensity of the stress response.
+              </div>
+            </details>
+
+            <details className="group border border-slate-200/60 bg-white/50 backdrop-blur-md rounded-3xl p-6 transition-all duration-300 open:bg-indigo-50/30 open:border-indigo-100/80 shadow-sm">
+              <summary className="flex items-center justify-between font-extrabold text-slate-700 cursor-pointer list-none outline-none select-none text-base md:text-lg [&::-webkit-details-marker]:hidden">
+                <span>Is Unkahi a replacement for professional therapy?</span>
+                <span className="text-indigo-500 transition-transform duration-300 group-open:rotate-45 text-2xl font-light leading-none">＋</span>
+              </summary>
+              <div className="mt-4 text-slate-600 text-sm md:text-base leading-relaxed border-t border-slate-100 pt-4 font-medium">
+                No, Unkahi is not a replacement for professional clinical therapy, medical diagnostics, or formal psychiatric treatment. It is an educational and self-paced interactive resource designed to aid in nervous system grounding and daily emotional mindfulness. If you are experiencing a mental health crisis, thoughts of self-harm, or severe emotional distress, please visit our <strong>Support Directory</strong> page to find helpline phone numbers or reach out immediately to professional medical services.
+              </div>
+            </details>
+          </div>
+        </section>
 
         {/* Pacing & Animations spacing bottom */}
         <div className="mt-16 text-slate-400 text-sm font-medium tracking-wide text-center">
